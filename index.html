@@ -538,7 +538,7 @@
       <div id="ideas-list" class="card-list"></div>
 
       <button class="archive-toggle-btn" id="archive-toggle-btn" onclick="toggleCompletedArchive()">
-        📦 Show Completed Projects (<span id="completed-count">0</span>)
+        📦 Show Completed Projects
       </button>
       <div id="completed-list" class="card-list" style="display:none;"></div>
 
@@ -1060,8 +1060,8 @@
         archiveContainer.style.display = showCompletedArchive ? 'flex' : 'none';
       }
       if (toggleBtn) {
-        toggleBtn.innerHTML = showCompletedArchive
-          ? '📦 Hide Completed Projects'
+        toggleBtn.innerHTML = showCompletedArchive 
+          ? '📦 Hide Completed Projects' 
           : `📦 Show Completed Projects (${completedCount})`;
       }
     }
@@ -1087,7 +1087,7 @@
       window.open(url, '_blank');
     }
 
-    // Row Counter: Uses explicit encoded names to avoid syntax errors
+    // Row Counter
     window.adjustProjectRow = function(encodedName, delta) {
       const projectName = decodeURIComponent(encodedName);
       const current = projectRowCounters[projectName] || 0;
@@ -1105,7 +1105,7 @@
       }
     };
 
-    // PDF / Pattern File Upload via IndexedDB
+    // Pattern / PDF Attachment
     window.attachPdfToProject = function(encodedName) {
       const projectName = decodeURIComponent(encodedName);
       const input = document.createElement('input');
@@ -1124,7 +1124,7 @@
 
           localStorage.setItem('project_pdfs_meta', JSON.stringify(projectPdfsMeta));
           localStorage.setItem('row_counters_data', JSON.stringify(projectRowCounters));
-          render(); // Auto re-renders immediately!
+          render();
         } catch (err) {
           alert('Could not save file to device storage.');
         }
@@ -1157,12 +1157,13 @@
       if (!confirm(`Remove attached pattern and row counter for "${projectName}"?`)) return;
       await removePdfBlobFromDb(projectName);
       delete projectPdfsMeta[projectName];
-      delete projectRowCounters[projectName]; // Removes row counter when PDF is removed
+      delete projectRowCounters[projectName];
       localStorage.setItem('project_pdfs_meta', JSON.stringify(projectPdfsMeta));
       localStorage.setItem('row_counters_data', JSON.stringify(projectRowCounters));
       render();
     };
 
+    // Stacking and Alphabetical Sorting
     function getStackedStash(rawList) {
       const map = new Map();
       rawList.forEach(item => {
@@ -1183,7 +1184,7 @@
         }
       });
 
-      // Alphabetical sorting: primary by Name (A-Z), secondary by Colour
+      // Alphabetical sorting: Brand/Name first, then Colour
       return Array.from(map.values()).sort((a, b) => {
         const nameA = (a.name || '').trim().toLowerCase();
         const nameB = (b.name || '').trim().toLowerCase();
@@ -1195,11 +1196,13 @@
         return colA.localeCompare(colB);
       });
     }
-      return Array.from(map.values());
-    }
 
-    window.incrementYarnGroup = function(yarnStr) {
-      const yarn = JSON.parse(decodeURIComponent(yarnStr));
+    // Non-jumping increment and decrement
+    window.incrementYarnGroup = function(yarnIndex) {
+      const stacked = getStackedStash(stash);
+      const yarn = stacked[yarnIndex];
+      if (!yarn) return;
+
       const newEntry = {
         name: yarn.name,
         weight: yarn.weight,
@@ -1212,22 +1215,23 @@
         grams: yarn.grams || "",
         meters: yarn.meters || ""
       };
-      // Append to the end of array instead of unshift, keeping natural order intact
+      
       stash.push({ ...newEntry, rowIndex: stash.length + 2 });
       localStorage.setItem('stash_data', JSON.stringify(stash));
       render();
       postAction({ action: 'ADD_YARN', yarn: newEntry });
     };
 
-    window.decrementYarnGroup = function(yarnStr) {
-      const yarn = JSON.parse(decodeURIComponent(yarnStr));
-      if (yarn.rowIndices && yarn.rowIndices.length > 0) {
-        const removeRowIndex = yarn.rowIndices[yarn.rowIndices.length - 1];
-        stash = stash.filter(i => i.rowIndex !== removeRowIndex);
-        localStorage.setItem('stash_data', JSON.stringify(stash));
-        render();
-        postAction({ action: 'DELETE_YARN', rowIndex: removeRowIndex });
-      }
+    window.decrementYarnGroup = function(yarnIndex) {
+      const stacked = getStackedStash(stash);
+      const yarn = stacked[yarnIndex];
+      if (!yarn || !yarn.rowIndices || yarn.rowIndices.length === 0) return;
+
+      const removeRowIndex = yarn.rowIndices[yarn.rowIndices.length - 1];
+      stash = stash.filter(i => i.rowIndex !== removeRowIndex);
+      localStorage.setItem('stash_data', JSON.stringify(stash));
+      render();
+      postAction({ action: 'DELETE_YARN', rowIndex: removeRowIndex });
     };
 
     function openAssignPicker(rowIndex) {
@@ -1459,50 +1463,46 @@
 
         const stacked = getStackedStash(filtered);
 
-        document.getElementById('yarn-list').innerHTML = stacked.map(item => {
-          const encYarn = encodeURIComponent(JSON.stringify(item));
-          return `
-            <div class="card">
-              <div class="card-head">
-                <div>
-                  <div class="card-title">
-                    ${item.name || 'Unnamed Skein'}
-                    ${item.count > 1 ? `<span class="qty-badge">x${item.count}</span>` : ''}
-                  </div>
-                  <div class="card-subtitle">${item.colour} ${item.shade ? '• Shade ' + item.shade : ''}</div>
+        document.getElementById('yarn-list').innerHTML = stacked.map((item, idx) => `
+          <div class="card">
+            <div class="card-head">
+              <div>
+                <div class="card-title">
+                  ${item.name || 'Unnamed Skein'}
+                  ${item.count > 1 ? `<span class="qty-badge">x${item.count}</span>` : ''}
                 </div>
-                <div style="display:flex; align-items:center; gap:6px;">
-                  <button class="qty-btn" onclick="decrementYarnGroup('${encYarn}')">–</button>
-                  <button class="qty-btn" onclick="incrementYarnGroup('${encYarn}')">+</button>
-                  <span class="tag">${item.weight}</span>
-                </div>
+                <div class="card-subtitle">${item.colour} ${item.shade ? '• Shade ' + item.shade : ''}</div>
               </div>
-              <div class="tags">
-                ${item.hook ? `<span class="tag">Hook: ${item.hook}mm</span>` : ''}
-                ${item.grams ? `<span class="tag">⚖️ ${item.grams}g</span>` : ''}
-                ${item.meters ? `<span class="tag">📏 ${item.meters}m</span>` : ''}
-                ${item.isScrap ? `<span class="tag scrap">Scrap</span>` : '<span class="tag">Full Skein</span>'}
-                ${item.hasTag ? `<span class="tag">🏷️ Tag</span>` : ''}
-                ${item.project ? `<span class="tag project">🧵 ${item.project}</span>` : ''}
-              </div>
-              <div class="card-actions">
-                <button class="btn-assign" onclick="openAssignPicker(${item.rowIndex})">
-                  <span>${item.project ? '🧵 ' + item.project : '-- Assign Project --'}</span>
-                  <span style="color:var(--text-muted); font-size:0.75rem;">▼</span>
-                </button>
-                <button class="btn-action" onclick="searchRavelryByWeightAndYardage('${item.weight}', '${item.meters || ''}')">
-                  🔍 Ravelry
-                </button>
-                <button class="delete-btn" onclick="deleteYarn(${item.rowIndex})">Delete</button>
+              <div style="display:flex; align-items:center; gap:6px;">
+                <button class="qty-btn" onclick="decrementYarnGroup(${idx})">–</button>
+                <button class="qty-btn" onclick="incrementYarnGroup(${idx})">+</button>
+                <span class="tag">${item.weight}</span>
               </div>
             </div>
-          `;
-        }).join('');
+            <div class="tags">
+              ${item.hook ? `<span class="tag">Hook: ${item.hook}mm</span>` : ''}
+              ${item.grams ? `<span class="tag">⚖️ ${item.grams}g</span>` : ''}
+              ${item.meters ? `<span class="tag">📏 ${item.meters}m</span>` : ''}
+              ${item.isScrap ? `<span class="tag scrap">Scrap</span>` : '<span class="tag">Full Skein</span>'}
+              ${item.hasTag ? `<span class="tag">🏷️ Tag</span>` : ''}
+              ${item.project ? `<span class="tag project">🧵 ${item.project}</span>` : ''}
+            </div>
+            <div class="card-actions">
+              <button class="btn-assign" onclick="openAssignPicker(${item.rowIndex})">
+                <span>${item.project ? '🧵 ' + item.project : '-- Assign Project --'}</span>
+                <span style="color:var(--text-muted); font-size:0.75rem;">▼</span>
+              </button>
+              <button class="btn-action" onclick="searchRavelryByWeightAndYardage('${item.weight}', '${item.meters || ''}')">
+                🔍 Ravelry
+              </button>
+              <button class="delete-btn" onclick="deleteYarn(${item.rowIndex})">Delete</button>
+            </div>
+          </div>
+        `).join('');
       } else if (activeTab === 'projects') {
         const activeProjects = planner.filter(p => !p.status || p.status.toLowerCase() !== 'complete');
         const completedProjects = planner.filter(p => p.status && p.status.toLowerCase() === 'complete');
 
-        // Safe toggle button text update without crashing on null spans
         const toggleBtn = document.getElementById('archive-toggle-btn');
         if (toggleBtn) {
           toggleBtn.innerHTML = showCompletedArchive 
@@ -1706,7 +1706,7 @@
         hasTag: document.getElementById('new-has-tag').checked,
         project: document.getElementById('new-project').value.trim()
       };
-      stash.unshift({ ...yarn, rowIndex: stash.length + 2 });
+      stash.push({ ...yarn, rowIndex: stash.length + 2 });
       localStorage.setItem('stash_data', JSON.stringify(stash));
       render();
       closeModal('add-yarn-modal');
