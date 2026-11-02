@@ -880,32 +880,32 @@
       'super-chunky': 80
     };
 
-    // Average meters per 100g based on weight and fiber density
+    // Calibrated yield table based on standard industrial yarn counts (Nm)
     const FIBER_DENSITY_TABLE = {
       'fine': {
-        'acrylic': 420,
-        'wool': 400,
-        'cotton': 340
+        'acrylic': 380, // Nm 3.8
+        'wool': 400,    // Nm 4.0
+        'cotton': 340   // Nm 3.4
       },
       'dk': {
-        'acrylic': 280, // e.g. Hayfield Spirit DK
-        'wool': 250,
-        'cotton': 240  // e.g. Your 100g DK cotton ball!
+        'acrylic': 240, // Calibrated directly to Nm 2.4 (100g = 240m)
+        'wool': 250,    // Nm 2.5
+        'cotton': 210   // Nm 2.1 (denser combed cotton)
       },
       'aran': {
-        'acrylic': 210,
-        'wool': 190,
-        'cotton': 170
+        'acrylic': 190, // Nm 1.9
+        'wool': 180,    // Nm 1.8
+        'cotton': 160   // Nm 1.6
       },
       'chunky': {
-        'acrylic': 145,
-        'wool': 130,
-        'cotton': 110
+        'acrylic': 130, // Nm 1.3
+        'wool': 120,    // Nm 1.2
+        'cotton': 100   // Nm 1.0
       },
       'super-chunky': {
-        'acrylic': 85,
-        'wool': 75,
-        'cotton': 60
+        'acrylic': 80,  // Nm 0.8
+        'wool': 70,     // Nm 0.7
+        'cotton': 50    // Nm 0.5
       }
     };
 
