@@ -598,7 +598,7 @@
   <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbyL4si7OB71uYZJnrrtJb79gaitfdGcpkRwtM_T8S_kAhZBHFf3mhpLnMg4KB7b2oqZyw/exec";
 
-    // Permanent default projects from sheet
+    // Permanent default projects from sheet[cite: 1]
     const DEFAULT_PLANNER = [
       { rowIndex: 3, name: "Hexagon Cardigan", pattern: "Bought", yarn: "Hayfield Spirit DK - Bliss", hook: "4", status: "Complete", notes: "For Me" },
       { rowIndex: 4, name: "Teardrops Clothes Basket", pattern: "NO", yarn: "N/A T-shirt yarn - Green", hook: "8", status: "Complete", notes: "For Home" },
@@ -624,6 +624,17 @@
       "Tapestries - just need two colours that compliment",
       "Tunisian crochet hooks with cables!"
     ];
+
+    // Wipe stale blank cache on boot so the dropdown fixes immediately
+    if (localStorage.getItem('stash_data')) {
+      try {
+        const testCache = JSON.parse(localStorage.getItem('stash_data'));
+        if (testCache && testCache.some(s => s && s.project === '')) {
+          localStorage.removeItem('planner_data');
+          localStorage.removeItem('ideas_data');
+        }
+      } catch(e) {}
+    }
 
     let stash = JSON.parse(localStorage.getItem('stash_data')) || [];
     let planner = JSON.parse(localStorage.getItem('planner_data')) || DEFAULT_PLANNER;
@@ -681,7 +692,6 @@
     function getAllProjectsList() {
       const set = new Set();
 
-      // Planner projects
       planner.forEach(p => {
         const name = (p && p.name ? String(p.name).trim() : '');
         if (name && name !== 'Project Name' && !name.toLowerCase().startsWith('project planner')) {
@@ -689,7 +699,6 @@
         }
       });
 
-      // Ideas / Wishlist
       ideas.forEach(i => {
         const name = (i && i.name ? String(i.name).trim() : '');
         if (name && name !== 'Project Name' && !name.toLowerCase().startsWith('other idea')) {
@@ -697,7 +706,6 @@
         }
       });
 
-      // Assigned projects from stash
       stash.forEach(s => {
         const proj = (s && s.project ? String(s.project).trim() : '');
         if (proj && proj !== 'TRUE' && proj !== 'FALSE') {
