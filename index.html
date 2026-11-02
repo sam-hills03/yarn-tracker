@@ -537,23 +537,38 @@
         <button onclick="closeModal('calc-modal')" style="background:none; border:none; font-size:1.2rem; cursor:pointer;">✕</button>
       </div>
       <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 14px;">
-        Weigh your leftover scrap ball on a kitchen scale to estimate remaining length:
+        Weigh your scrap ball on kitchen scales to estimate remaining yardage:
       </p>
 
-      <div class="form-group">
-        <label>Yarn Weight Category</label>
-        <select id="calc-weight" onchange="calculateYarnLength()">
-          <option value="fine">Fine / 4-ply (~400m per 100g)</option>
-          <option value="dk" selected>DK (~280m per 100g)</option>
-          <option value="aran">Aran / Worsted (~200m per 100g)</option>
-          <option value="chunky">Chunky (~140m per 100g)</option>
-          <option value="super-chunky">Super Chunky (~80m per 100g)</option>
-        </select>
+      <div style="display:flex; gap:10px;">
+        <div class="form-group" style="flex:1;">
+          <label>Yarn Weight</label>
+          <select id="calc-weight" onchange="updateFiberCalculation()">
+            <option value="fine">Fine / 4-ply</option>
+            <option value="dk" selected>DK</option>
+            <option value="aran">Aran / Worsted</option>
+            <option value="chunky">Chunky</option>
+            <option value="super-chunky">Super Chunky</option>
+          </select>
+        </div>
+        <div class="form-group" style="flex:1;">
+          <label>Fiber Material</label>
+          <select id="calc-fiber" onchange="updateFiberCalculation()">
+            <option value="acrylic">Acrylic (Light)</option>
+            <option value="wool">Wool / Blend</option>
+            <option value="cotton" selected>Cotton (Dense)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Displays the auto-calculated rate -->
+      <div style="font-size:0.75rem; color:var(--text-muted); margin-top:-6px; margin-bottom:12px; font-weight:600;">
+        Est. yield: <span id="calc-rate-display" style="color:var(--primary); font-weight:700;">240m</span> per 100g
       </div>
 
       <div class="form-group">
-        <label>Scale Weight (Grams)</label>
-        <input type="number" id="calc-grams" placeholder="e.g. 45" oninput="calculateYarnLength()" />
+        <label>Scale Weight of Scrap Ball (Grams)</label>
+        <input type="number" id="calc-grams" placeholder="e.g. 45" oninput="updateFiberCalculation()" />
       </div>
 
       <div style="background:#faf8f5; border:1px solid var(--border); border-radius:12px; padding:14px; margin:14px 0; text-align:center;">
@@ -572,7 +587,7 @@
 
       <div class="form-group">
         <label>Pattern Needed (Optional Metres)</label>
-        <input type="number" id="calc-needed" placeholder="e.g. 100" oninput="calculateYarnLength()" />
+        <input type="number" id="calc-needed" placeholder="e.g. 100" oninput="updateFiberCalculation()" />
       </div>
       <div id="calc-verdict" style="font-size:0.85rem; font-weight:700; text-align:center; min-height:20px;"></div>
 
@@ -865,12 +880,49 @@
       'super-chunky': 80
     };
 
-    function calculateYarnLength() {
-      const weightType = document.getElementById('calc-weight').value;
+    // Average meters per 100g based on weight and fiber density
+    const FIBER_DENSITY_TABLE = {
+      'fine': {
+        'acrylic': 420,
+        'wool': 400,
+        'cotton': 340
+      },
+      'dk': {
+        'acrylic': 280, // e.g. Hayfield Spirit DK
+        'wool': 250,
+        'cotton': 240  // e.g. Your 100g DK cotton ball!
+      },
+      'aran': {
+        'acrylic': 210,
+        'wool': 190,
+        'cotton': 170
+      },
+      'chunky': {
+        'acrylic': 145,
+        'wool': 130,
+        'cotton': 110
+      },
+      'super-chunky': {
+        'acrylic': 85,
+        'wool': 75,
+        'cotton': 60
+      }
+    };
+
+    function updateFiberCalculation() {
+      const weight = document.getElementById('calc-weight').value;
+      const fiber = document.getElementById('calc-fiber').value;
       const grams = parseFloat(document.getElementById('calc-grams').value) || 0;
       const needed = parseFloat(document.getElementById('calc-needed').value) || 0;
 
-      const yieldPerGram = YARN_YIELD_PER_100G[weightType] / 100;
+      // Lookup meters per 100g for this combination
+      const ratePer100g = (FIBER_DENSITY_TABLE[weight] && FIBER_DENSITY_TABLE[weight][fiber]) 
+        ? FIBER_DENSITY_TABLE[weight][fiber] 
+        : 240;
+
+      document.getElementById('calc-rate-display').innerText = `${ratePer100g}m`;
+
+      const yieldPerGram = ratePer100g / 100;
       const meters = Math.round(grams * yieldPerGram);
       const yards = Math.round(meters * 1.09361);
 
