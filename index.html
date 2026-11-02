@@ -343,10 +343,10 @@
 
     <!-- Projects & Ideas View -->
     <div id="projects-view" style="display:none;">
-      <div class="section-title">✨ Active Projects</div>
+      <div class="section-title">✨ Project Planner</div>
       <div id="planner-list" class="card-list"></div>
 
-      <div class="section-title">💡 Pattern Ideas & Wishlist</div>
+      <div class="section-title">💡 Other Ideas & Wishlist</div>
       <div id="ideas-list" class="card-list"></div>
 
       <div class="section-title">📝 Quick Notes</div>
@@ -455,7 +455,7 @@
   <!-- Add Idea Modal -->
   <div class="modal" id="add-idea-modal">
     <div class="modal-content">
-      <h2 style="font-size: 1.2rem; margin-bottom: 14px;">Add Project Idea</h2>
+      <h2 style="font-size: 1.2rem; margin-bottom: 14px;">Add Project / Idea</h2>
       <div class="form-group">
         <label>Project / Pattern Name</label>
         <input type="text" id="idea-name" placeholder="e.g. Granny Square Cardigan" required />
@@ -467,7 +467,7 @@
       <div style="display:flex; gap:10px;">
         <div class="form-group" style="flex:1;">
           <label>Where</label>
-          <input type="text" id="idea-where" placeholder="Etsy" />
+          <input type="text" id="idea-where" placeholder="Etsy, TikTok, Ravelry" />
         </div>
         <div class="form-group" style="flex:1;">
           <label>Paid (£)</label>
@@ -598,10 +598,37 @@
   <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbyL4si7OB71uYZJnrrtJb79gaitfdGcpkRwtM_T8S_kAhZBHFf3mhpLnMg4KB7b2oqZyw/exec";
 
+    // Permanent default projects from sheet
+    const DEFAULT_PLANNER = [
+      { rowIndex: 3, name: "Hexagon Cardigan", pattern: "Bought", yarn: "Hayfield Spirit DK - Bliss", hook: "4", status: "Complete", notes: "For Me" },
+      { rowIndex: 4, name: "Teardrops Clothes Basket", pattern: "NO", yarn: "N/A T-shirt yarn - Green", hook: "8", status: "Complete", notes: "For Home" },
+      { rowIndex: 5, name: "Leaf Bandana", pattern: "Bought", yarn: "Hayfield Spirit DK - Casper", hook: "4", status: "Complete", notes: "For Lily" },
+      { rowIndex: 6, name: "Butterfly Cardigan", pattern: "Bought", yarn: "Hayfield Bonus DK - Fawn", hook: "4", status: "Ready to go", notes: "For Sam" },
+      { rowIndex: 7, name: "White and Blue Scarf", pattern: "Freehand", yarn: "Hayfield Spirit Chunky - Blue", hook: "6 (Tunisian)", status: "Need fabric", notes: "?" }
+    ];
+
+    const DEFAULT_IDEAS = [
+      { rowIndex: 11, name: "Bifurca Pullover", patternLink: "https://ravelry.com", where: "Ravelry", paid: 8, yarn: "-", hook: "-", doing: "-", notes: "Looks hard" },
+      { rowIndex: 12, name: "Crochet Cable Cardi", patternLink: "https://joslincrochet.com", where: "Online", paid: 5, yarn: "DK Cotton & Mohair", hook: "5", doing: "Not started", notes: "Not got the yarn" },
+      { rowIndex: 13, name: "Willow Sweater", patternLink: "https://etsy.com", where: "Etsy", paid: 11, yarn: "3x Acrylic Mohair", hook: "6 & 4.5", doing: "Not started", notes: "Lowkey expensive" },
+      { rowIndex: 14, name: "Tattoo Banner", patternLink: "", where: "Freehand", paid: 0, yarn: "-", hook: "-", doing: "Not started", notes: "Need to design" },
+      { rowIndex: 15, name: "Granny Sweater", patternLink: "https://tiktok.com", where: "TikTok", paid: 0, yarn: "Any DK/Aran", hook: "5", doing: "Yes", notes: "Need to decide" },
+      { rowIndex: 16, name: "Bedside Holder", patternLink: "https://pin.it", where: "Pinterest", paid: 0, yarn: "Green T-shirt yarn", hook: "-", doing: "Yes", notes: "Sticks drying" },
+      { rowIndex: 17, name: "Off the Shoulder Top", patternLink: "https://pin.it", where: "Pinterest", paid: 0, yarn: "DK Spairs", hook: "-", doing: "Yes", notes: "Ready to go" },
+      { rowIndex: 18, name: "Butterfly Tapestry", patternLink: "https://pin.it", where: "Pinterest", paid: 0, yarn: "Fine", hook: "-", doing: "Not started", notes: "Need yarn" }
+    ];
+
+    const DEFAULT_ROUGH = [
+      "Tunisian sweater with colour work",
+      "granny square back long cardi",
+      "Tapestries - just need two colours that compliment",
+      "Tunisian crochet hooks with cables!"
+    ];
+
     let stash = JSON.parse(localStorage.getItem('stash_data')) || [];
-    let planner = JSON.parse(localStorage.getItem('planner_data')) || [];
-    let ideas = JSON.parse(localStorage.getItem('ideas_data')) || [];
-    let roughNotes = JSON.parse(localStorage.getItem('notes_data')) || [];
+    let planner = JSON.parse(localStorage.getItem('planner_data')) || DEFAULT_PLANNER;
+    let ideas = JSON.parse(localStorage.getItem('ideas_data')) || DEFAULT_IDEAS;
+    let roughNotes = JSON.parse(localStorage.getItem('notes_data')) || DEFAULT_ROUGH;
 
     let activeTab = 'yarn';
     let currentFilter = 'all';
@@ -617,10 +644,10 @@
       try {
         const res = await fetch(API_URL);
         const data = await res.json();
-        if (data.yarn) stash = data.yarn;
-        if (data.planner) planner = data.planner;
-        if (data.ideas) ideas = data.ideas;
-        if (data.roughNotes) roughNotes = data.roughNotes;
+        if (data.yarn && data.yarn.length) stash = data.yarn;
+        if (data.planner && data.planner.length) planner = data.planner;
+        if (data.ideas && data.ideas.length) ideas = data.ideas;
+        if (data.roughNotes && data.roughNotes.length) roughNotes = data.roughNotes;
 
         localStorage.setItem('stash_data', JSON.stringify(stash));
         localStorage.setItem('planner_data', JSON.stringify(planner));
