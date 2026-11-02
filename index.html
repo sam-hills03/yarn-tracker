@@ -1054,14 +1054,15 @@
       showCompletedArchive = !showCompletedArchive;
       const archiveContainer = document.getElementById('completed-list');
       const toggleBtn = document.getElementById('archive-toggle-btn');
+      const completedCount = planner.filter(p => p.status && p.status.toLowerCase() === 'complete').length;
       
-      if (showCompletedArchive) {
-        archiveContainer.style.display = 'flex';
-        toggleBtn.innerHTML = '📦 Hide Completed Projects';
-      } else {
-        archiveContainer.style.display = 'none';
-        const completedCount = planner.filter(p => p.status && p.status.toLowerCase() === 'complete').length;
-        toggleBtn.innerHTML = `📦 Show Completed Projects (${completedCount})`;
+      if (archiveContainer) {
+        archiveContainer.style.display = showCompletedArchive ? 'flex' : 'none';
+      }
+      if (toggleBtn) {
+        toggleBtn.innerHTML = showCompletedArchive
+          ? '📦 Hide Completed Projects'
+          : `📦 Show Completed Projects (${completedCount})`;
       }
     }
 
@@ -1487,9 +1488,12 @@
         const activeProjects = planner.filter(p => !p.status || p.status.toLowerCase() !== 'complete');
         const completedProjects = planner.filter(p => p.status && p.status.toLowerCase() === 'complete');
 
-        document.getElementById('completed-count').innerText = completedProjects.length;
-        if (!showCompletedArchive) {
-          document.getElementById('archive-toggle-btn').innerHTML = `📦 Show Completed Projects (${completedProjects.length})`;
+        // Safe toggle button text update without crashing on null spans
+        const toggleBtn = document.getElementById('archive-toggle-btn');
+        if (toggleBtn) {
+          toggleBtn.innerHTML = showCompletedArchive 
+            ? '📦 Hide Completed Projects' 
+            : `📦 Show Completed Projects (${completedProjects.length})`;
         }
 
         document.getElementById('planner-list').innerHTML = activeProjects.length > 0 
