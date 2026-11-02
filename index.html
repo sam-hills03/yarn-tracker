@@ -27,7 +27,7 @@
       font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
       background-color: var(--bg);
       color: var(--text);
-      padding-bottom: 95px;
+      padding-bottom: 110px;
     }
     header {
       background: var(--card-bg);
@@ -103,6 +103,36 @@
     }
     .card-title { font-size: 1.05rem; font-weight: 700; color: var(--text); }
     .card-subtitle { font-size: 0.85rem; color: var(--text-muted); margin-top: 2px; }
+    
+    /* Quantity Stacking Counter */
+    .qty-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--primary-light);
+      color: var(--primary);
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      margin-left: 6px;
+    }
+    .qty-btn {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      background: #fff;
+      color: var(--text);
+      font-size: 0.9rem;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+    .qty-btn:active { background: var(--border); }
+
     .tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
     .tag {
       font-size: 0.75rem;
@@ -145,11 +175,7 @@
       align-items: center;
       gap: 5px;
     }
-    .assigned-yarn-list {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-    }
+    .assigned-yarn-list { display: flex; flex-wrap: wrap; gap: 6px; }
     .assigned-yarn-chip {
       font-size: 0.78rem;
       background: #ffffff;
@@ -170,22 +196,23 @@
       margin-top: 10px;
       padding-top: 10px;
       border-top: 1px dashed var(--border);
-      gap: 10px;
+      gap: 8px;
+      flex-wrap: wrap;
     }
     .btn-action {
       background: #fff;
       border: 1px solid var(--border);
       color: var(--text);
-      font-size: 0.85rem;
+      font-size: 0.82rem;
       font-weight: 600;
-      padding: 8px 14px;
-      border-radius: 10px;
+      padding: 7px 12px;
+      border-radius: 8px;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
-      gap: 6px;
+      gap: 5px;
+      text-decoration: none;
     }
-    /* Touch Button for Project Assignment */
     .btn-assign {
       flex: 1;
       background: #faf8f5;
@@ -193,8 +220,8 @@
       color: #2c2724;
       font-size: 0.85rem;
       font-weight: 600;
-      padding: 10px 12px;
-      border-radius: 10px;
+      padding: 8px 12px;
+      border-radius: 8px;
       text-align: left;
       cursor: pointer;
       display: flex;
@@ -203,10 +230,7 @@
       white-space: nowrap;
       overflow: hidden;
     }
-    .btn-assign span {
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
+    .btn-assign span { overflow: hidden; text-overflow: ellipsis; }
     .delete-btn {
       background: none;
       border: none;
@@ -250,49 +274,65 @@
       font-size: 0.9rem;
       margin-bottom: 8px;
     }
-    .link-btn {
-      font-size: 0.8rem;
-      font-weight: 600;
-      color: var(--primary);
-      text-decoration: none;
-      display: inline-flex;
+
+    /* Embedded Row Counter inside Projects */
+    .row-counter-box {
+      margin-top: 10px;
+      padding: 10px 14px;
+      background: #fdfaf6;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      display: flex;
       align-items: center;
-      gap: 3px;
+      justify-content: space-between;
+    }
+    .counter-display { font-size: 1.25rem; font-weight: 800; color: var(--primary); }
+
+    /* Floating Pill Tools (Bottom Screen) */
+    .floating-tools-bar {
+      position: fixed;
+      bottom: 78px;
+      left: 16px;
+      right: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      pointer-events: none;
+      z-index: 25;
+    }
+    .fab-calc {
+      pointer-events: auto;
+      height: 44px;
+      padding: 0 16px;
+      border-radius: 22px;
+      background: #2c2724;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      border: none;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+      cursor: pointer;
+    }
+    .fab-add {
+      pointer-events: auto;
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      border: none;
+      box-shadow: 0 6px 20px rgba(201, 100, 89, 0.4);
+      cursor: pointer;
     }
 
-    /* Stats Grid */
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
-      margin-bottom: 16px;
-    }
-    .stat-metric-card {
-      background: var(--card-bg);
-      border-radius: var(--radius);
-      padding: 12px 8px;
-      text-align: center;
-      border: 1px solid var(--border);
-      box-shadow: var(--shadow);
-    }
-    .stat-val { font-size: 1.3rem; font-weight: 700; color: var(--stat-purple); margin-bottom: 2px; }
-    .stat-label { font-size: 0.72rem; color: var(--text-muted); font-weight: 600; line-height: 1.1; }
-    .chart-box {
-      background: var(--card-bg);
-      border-radius: var(--radius);
-      padding: 16px;
-      border: 1px solid var(--border);
-      box-shadow: var(--shadow);
-      margin-bottom: 14px;
-    }
-    .chart-box h3 { font-size: 0.95rem; color: var(--text); margin-bottom: 12px; }
-    .bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 9px; font-size: 0.82rem; }
-    .bar-label { width: 90px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text); font-weight: 500; }
-    .bar-track { flex: 1; height: 14px; background: #f1ecf5; border-radius: 7px; overflow: hidden; }
-    .bar-fill { height: 100%; background: #c3b4db; border-radius: 7px; }
-    .bar-count { width: 26px; text-align: right; font-weight: 700; color: var(--text-muted); }
-
-    /* Bottom Navigation Tab Bar */
+    /* Tab Bar */
     .tab-bar {
       position: fixed;
       bottom: 0;
@@ -318,47 +358,6 @@
       cursor: pointer;
     }
     .tab-btn.active { color: var(--primary); }
-
-    /* Floating Quick Add Button (Bottom Right) */
-    .fab {
-      position: fixed;
-      bottom: 80px;
-      right: 18px;
-      width: 52px;
-      height: 52px;
-      border-radius: 50%;
-      background: var(--primary);
-      color: #fff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 26px;
-      border: none;
-      box-shadow: 0 6px 20px rgba(201, 100, 89, 0.4);
-      cursor: pointer;
-      z-index: 25;
-    }
-
-    /* Floating Calculator Quick Access Pill (Bottom Left on all tabs) */
-    .fab-calc {
-      position: fixed;
-      bottom: 82px;
-      left: 18px;
-      height: 44px;
-      padding: 0 16px;
-      border-radius: 22px;
-      background: #2c2724;
-      color: #fff;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 0.82rem;
-      font-weight: 700;
-      border: none;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.15);
-      cursor: pointer;
-      z-index: 25;
-    }
 
     /* Modals & Bottom Sheets */
     .modal {
@@ -414,8 +413,6 @@
       cursor: pointer;
       margin-top: 6px;
     }
-
-    /* Bottom Sheet Custom Project Picker Rows */
     .picker-item {
       display: flex;
       align-items: center;
@@ -430,10 +427,34 @@
       color: #2c2724 !important;
       cursor: pointer;
     }
-    .picker-item:active {
-      background: var(--primary-light);
-      border-color: var(--primary);
+    .picker-item:active { background: var(--primary-light); border-color: var(--primary); }
+
+    /* Stats Grid */
+    .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px; }
+    .stat-metric-card {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      padding: 12px 8px;
+      text-align: center;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
     }
+    .stat-val { font-size: 1.3rem; font-weight: 700; color: var(--stat-purple); margin-bottom: 2px; }
+    .stat-label { font-size: 0.72rem; color: var(--text-muted); font-weight: 600; line-height: 1.1; }
+    .chart-box {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      padding: 16px;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      margin-bottom: 14px;
+    }
+    .chart-box h3 { font-size: 0.95rem; color: var(--text); margin-bottom: 12px; }
+    .bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 9px; font-size: 0.82rem; }
+    .bar-label { width: 90px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text); font-weight: 500; }
+    .bar-track { flex: 1; height: 14px; background: #f1ecf5; border-radius: 7px; overflow: hidden; }
+    .bar-fill { height: 100%; background: #c3b4db; border-radius: 7px; }
+    .bar-count { width: 26px; text-align: right; font-weight: 700; color: var(--text-muted); }
   </style>
 </head>
 <body>
@@ -506,14 +527,13 @@
     </div>
   </main>
 
-  <!-- Floating Always-Accessible Calculator Pill -->
-  <button class="fab-calc" onclick="openModal('calc-modal')">
-    🧶 Calc
-  </button>
+  <!-- Floating Tools (Calculator on left, Add on right) -->
+  <div class="floating-tools-bar">
+    <button class="fab-calc" onclick="openModal('calc-modal')">🧶 Calc</button>
+    <button class="fab-add" id="main-fab" onclick="handleFabClick()">+</button>
+  </div>
 
-  <!-- Floating Add Button -->
-  <button class="fab" id="main-fab" onclick="handleFabClick()">+</button>
-
+  <!-- Bottom Navigation -->
   <nav class="tab-bar">
     <button class="tab-btn active" id="tab-yarn" onclick="switchTab('yarn')">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
@@ -529,7 +549,7 @@
     </button>
   </nav>
 
-  <!-- Floating Yarn Length & Scrap Calculator Modal -->
+  <!-- Scrap Yarn Calculator Modal -->
   <div class="modal" id="calc-modal">
     <div class="modal-content">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
@@ -537,7 +557,7 @@
         <button onclick="closeModal('calc-modal')" style="background:none; border:none; font-size:1.2rem; cursor:pointer;">✕</button>
       </div>
       <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 14px;">
-        Weigh your scrap ball on kitchen scales to estimate remaining yardage:
+        Weigh your scrap ball on kitchen scales to estimate remaining length:
       </p>
 
       <div style="display:flex; gap:10px;">
@@ -554,14 +574,13 @@
         <div class="form-group" style="flex:1;">
           <label>Fiber Material</label>
           <select id="calc-fiber" onchange="updateFiberCalculation()">
-            <option value="acrylic">Acrylic (Light)</option>
+            <option value="acrylic" selected>Acrylic (Nm 2.4)</option>
             <option value="wool">Wool / Blend</option>
-            <option value="cotton" selected>Cotton (Dense)</option>
+            <option value="cotton">Cotton (Dense)</option>
           </select>
         </div>
       </div>
 
-      <!-- Displays the auto-calculated rate -->
       <div style="font-size:0.75rem; color:var(--text-muted); margin-top:-6px; margin-bottom:12px; font-weight:600;">
         Est. yield: <span id="calc-rate-display" style="color:var(--primary); font-weight:700;">240m</span> per 100g
       </div>
@@ -595,7 +614,7 @@
     </div>
   </div>
 
-  <!-- Project Assignment Custom Modal -->
+  <!-- Project Assignment Custom Bottom Sheet -->
   <div class="modal" id="assign-picker-modal">
     <div class="modal-content">
       <h2 style="font-size: 1.2rem; margin-bottom: 4px;">Assign to Project</h2>
@@ -609,7 +628,7 @@
     </div>
   </div>
 
-  <!-- Add Yarn Modal -->
+  <!-- Add Yarn Modal (With Yardage and Gram Weights) -->
   <div class="modal" id="add-yarn-modal">
     <div class="modal-content">
       <h2 style="font-size: 1.2rem; margin-bottom: 14px;">Add New Yarn</h2>
@@ -633,6 +652,16 @@
         <div class="form-group" style="flex:1;">
           <label>Hook Size</label>
           <input type="text" id="new-hook" placeholder="e.g. 4" />
+        </div>
+      </div>
+      <div style="display:flex; gap:10px;">
+        <div class="form-group" style="flex:1;">
+          <label>Ball Weight (Grams)</label>
+          <input type="number" id="new-grams" placeholder="e.g. 100" />
+        </div>
+        <div class="form-group" style="flex:1;">
+          <label>Length (Meters)</label>
+          <input type="number" id="new-meters" placeholder="e.g. 240" />
         </div>
       </div>
       <div style="display:flex; gap:10px;">
@@ -706,7 +735,7 @@
     </div>
   </div>
 
-  <!-- Edit Planner Modal -->
+  <!-- Edit Planner Modal (With Pattern URL Input) -->
   <div class="modal" id="edit-planner-modal">
     <div class="modal-content">
       <h2 style="font-size: 1.2rem; margin-bottom: 14px;">Edit Project</h2>
@@ -715,11 +744,11 @@
         <label>Project Name</label>
         <input type="text" id="edit-p-name" required />
       </div>
+      <div class="form-group">
+        <label>Pattern Link / Source URL</label>
+        <input type="text" id="edit-p-pattern" placeholder="e.g. https://ravelry.com/... or Bought" />
+      </div>
       <div style="display:flex; gap:10px;">
-        <div class="form-group" style="flex:1;">
-          <label>Pattern Source</label>
-          <input type="text" id="edit-p-pattern" placeholder="Bought / Freehand" />
-        </div>
         <div class="form-group" style="flex:1;">
           <label>Status</label>
           <select id="edit-p-status">
@@ -729,16 +758,14 @@
             <option value="Complete">Complete</option>
           </select>
         </div>
-      </div>
-      <div style="display:flex; gap:10px;">
-        <div class="form-group" style="flex:1;">
-          <label>Yarn Pattern Spec</label>
-          <input type="text" id="edit-p-yarn" />
-        </div>
         <div class="form-group" style="flex:1;">
           <label>Hook</label>
           <input type="text" id="edit-p-hook" />
         </div>
+      </div>
+      <div class="form-group">
+        <label>Yarn Pattern Spec</label>
+        <input type="text" id="edit-p-yarn" />
       </div>
       <div class="form-group">
         <label>Notes</label>
@@ -761,7 +788,7 @@
       </div>
       <div class="form-group">
         <label>Pattern Link (URL)</label>
-        <input type="url" id="edit-i-link" />
+        <input type="url" id="edit-i-link" placeholder="https://..." />
       </div>
       <div style="display:flex; gap:10px;">
         <div class="form-group" style="flex:1;">
@@ -784,7 +811,7 @@
         </div>
       </div>
       <div class="form-group">
-        <label>Status / Doing?</label>
+        <label>Doing?</label>
         <select id="edit-i-doing">
           <option value="Not started">Not started</option>
           <option value="Yes">Yes (In progress)</option>
@@ -804,7 +831,6 @@
   <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbyL4si7OB71uYZJnrrtJb79gaitfdGcpkRwtM_T8S_kAhZBHFf3mhpLnMg4KB7b2oqZyw/exec";
 
-    // Known default projects[cite: 1, 4]
     const KNOWN_PROJECTS = [
       "Bedside hanger", "Floral fillet tapestry", "Shorts", "Bunny", "Granny sweater", 
       "Scarf", "Granny square T-shirt", "Mesh shirt", "Frog", "Wings", "Fern wreath", 
@@ -818,6 +844,8 @@
     let planner = JSON.parse(localStorage.getItem('planner_data')) || [];
     let ideas = JSON.parse(localStorage.getItem('ideas_data')) || [];
     let roughNotes = JSON.parse(localStorage.getItem('notes_data')) || [];
+    let projectRowCounters = JSON.parse(localStorage.getItem('row_counters_data')) || {};
+    let projectPdfs = JSON.parse(localStorage.getItem('project_pdfs_data')) || {};
 
     let activeTab = 'yarn';
     let currentFilter = 'all';
@@ -850,7 +878,6 @@
         setSyncStatus('synced', '✓ Synced');
         render();
       } catch (err) {
-        console.error(err);
         setSyncStatus('', 'Offline (Cached)');
         render();
       }
@@ -871,42 +898,13 @@
       }
     }
 
-    // Calculator yield estimates per 100g
-    const YARN_YIELD_PER_100G = {
-      'fine': 400,
-      'dk': 280,
-      'aran': 200,
-      'chunky': 140,
-      'super-chunky': 80
-    };
-
-    // Calibrated yield table based on standard industrial yarn counts (Nm)
+    // Fiber Density Table (Calibrated to 240m for DK Acrylic Nm 2.4)
     const FIBER_DENSITY_TABLE = {
-      'fine': {
-        'acrylic': 380, // Nm 3.8
-        'wool': 400,    // Nm 4.0
-        'cotton': 340   // Nm 3.4
-      },
-      'dk': {
-        'acrylic': 240, // Calibrated directly to Nm 2.4 (100g = 240m)
-        'wool': 250,    // Nm 2.5
-        'cotton': 210   // Nm 2.1 (denser combed cotton)
-      },
-      'aran': {
-        'acrylic': 190, // Nm 1.9
-        'wool': 180,    // Nm 1.8
-        'cotton': 160   // Nm 1.6
-      },
-      'chunky': {
-        'acrylic': 130, // Nm 1.3
-        'wool': 120,    // Nm 1.2
-        'cotton': 100   // Nm 1.0
-      },
-      'super-chunky': {
-        'acrylic': 80,  // Nm 0.8
-        'wool': 70,     // Nm 0.7
-        'cotton': 50    // Nm 0.5
-      }
+      'fine': { 'acrylic': 380, 'wool': 400, 'cotton': 340 },
+      'dk': { 'acrylic': 240, 'wool': 250, 'cotton': 210 },
+      'aran': { 'acrylic': 190, 'wool': 180, 'cotton': 160 },
+      'chunky': { 'acrylic': 130, 'wool': 120, 'cotton': 100 },
+      'super-chunky': { 'acrylic': 80, 'wool': 70, 'cotton': 50 }
     };
 
     function updateFiberCalculation() {
@@ -915,15 +913,13 @@
       const grams = parseFloat(document.getElementById('calc-grams').value) || 0;
       const needed = parseFloat(document.getElementById('calc-needed').value) || 0;
 
-      // Lookup meters per 100g for this combination
       const ratePer100g = (FIBER_DENSITY_TABLE[weight] && FIBER_DENSITY_TABLE[weight][fiber]) 
         ? FIBER_DENSITY_TABLE[weight][fiber] 
         : 240;
 
       document.getElementById('calc-rate-display').innerText = `${ratePer100g}m`;
 
-      const yieldPerGram = ratePer100g / 100;
-      const meters = Math.round(grams * yieldPerGram);
+      const meters = Math.round(grams * (ratePer100g / 100));
       const yards = Math.round(meters * 1.09361);
 
       document.getElementById('result-meters').innerText = meters;
@@ -948,23 +944,16 @@
       KNOWN_PROJECTS.forEach(name => set.add(name.trim()));
 
       (planner || []).forEach(p => {
-        if (p && p.name && p.name.trim() !== "" && p.name !== "Project Name") {
-          set.add(p.name.trim());
-        }
+        if (p && p.name && p.name.trim() !== "" && p.name !== "Project Name") set.add(p.name.trim());
       });
-
       (ideas || []).forEach(i => {
-        if (i && i.name && i.name.trim() !== "" && i.name !== "Project Name") {
-          set.add(i.name.trim());
-        }
+        if (i && i.name && i.name.trim() !== "" && i.name !== "Project Name") set.add(i.name.trim());
       });
-
       (stash || []).forEach(s => {
         if (s && s.project && s.project.trim() !== "" && s.project !== "TRUE" && s.project !== "FALSE") {
           set.add(s.project.trim());
         }
       });
-
       return Array.from(set).filter(Boolean).sort((a, b) => a.localeCompare(b));
     }
 
@@ -990,7 +979,111 @@
       }
     }
 
-    // Opens Custom Bottom-Sheet Picker (replaces flaky select element)
+    // Direct Ravelry Search Launcher
+    function searchRavelryForYarn(name, weight, colour) {
+      const queryParts = [name !== 'N/A' ? name : '', weight, colour].filter(Boolean);
+      const url = `https://www.ravelry.com/patterns/search#weight=${encodeURIComponent(weight.toLowerCase())}&query=${encodeURIComponent(queryParts.join(' '))}`;
+      window.open(url, '_blank');
+    }
+
+    // Row Counter Management
+    function adjustProjectRow(projectName, delta) {
+      const current = projectRowCounters[projectName] || 0;
+      const next = Math.max(0, current + delta);
+      projectRowCounters[projectName] = next;
+      localStorage.setItem('row_counters_data', JSON.stringify(projectRowCounters));
+      render();
+    }
+
+    function resetProjectRow(projectName) {
+      if (confirm(`Reset row counter for ${projectName} back to 0?`)) {
+        projectRowCounters[projectName] = 0;
+        localStorage.setItem('row_counters_data', JSON.stringify(projectRowCounters));
+        render();
+      }
+    }
+
+    // PDF / Pattern File Attachment
+    function attachPdfToProject(projectName) {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'application/pdf,image/*';
+      input.onchange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          projectPdfs[projectName] = { name: file.name, data: event.target.result };
+          if (projectRowCounters[projectName] === undefined) projectRowCounters[projectName] = 0;
+          localStorage.setItem('project_pdfs_data', JSON.stringify(projectPdfs));
+          localStorage.setItem('row_counters_data', JSON.stringify(projectRowCounters));
+          render();
+        };
+        reader.readAsDataURL(file);
+      };
+      input.click();
+    }
+
+    function openProjectPdf(projectName) {
+      const pdf = projectPdfs[projectName];
+      if (!pdf) return;
+      const win = window.open();
+      win.document.write(`<iframe src="${pdf.data}" frameborder="0" style="border:0; top:0; left:0; bottom:0; right:0; width:100%; height:100%;" allowfullscreen></iframe>`);
+    }
+
+    // Stack identical yarns together
+    function getStackedStash(rawList) {
+      const map = new Map();
+      rawList.forEach(item => {
+        const key = [
+          (item.name || '').trim().toLowerCase(),
+          (item.weight || '').trim().toLowerCase(),
+          (item.colour || '').trim().toLowerCase(),
+          (item.shade || '').trim().toLowerCase(),
+          Boolean(item.isScrap)
+        ].join('|');
+
+        if (!map.has(key)) {
+          map.set(key, { ...item, count: 1, rowIndices: [item.rowIndex] });
+        } else {
+          const existing = map.get(key);
+          existing.count += 1;
+          existing.rowIndices.push(item.rowIndex);
+        }
+      });
+      return Array.from(map.values());
+    }
+
+    function incrementYarnGroup(yarn) {
+      const newEntry = {
+        name: yarn.name,
+        weight: yarn.weight,
+        colour: yarn.colour,
+        shade: yarn.shade,
+        hook: yarn.hook,
+        isScrap: yarn.isScrap,
+        hasTag: yarn.hasTag,
+        project: yarn.project || "",
+        grams: yarn.grams || "",
+        meters: yarn.meters || ""
+      };
+      stash.unshift({ ...newEntry, rowIndex: stash.length + 2 });
+      localStorage.setItem('stash_data', JSON.stringify(stash));
+      render();
+      postAction({ action: 'ADD_YARN', yarn: newEntry });
+    }
+
+    function decrementYarnGroup(yarn) {
+      if (yarn.rowIndices && yarn.rowIndices.length > 0) {
+        const removeRowIndex = yarn.rowIndices[yarn.rowIndices.length - 1];
+        stash = stash.filter(i => i.rowIndex !== removeRowIndex);
+        localStorage.setItem('stash_data', JSON.stringify(stash));
+        render();
+        postAction({ action: 'DELETE_YARN', rowIndex: removeRowIndex });
+      }
+    }
+
+    // Open Bottom Sheet Picker
     function openAssignPicker(rowIndex) {
       skeinBeingAssigned = rowIndex;
       const item = stash.find(s => s.rowIndex === rowIndex);
@@ -1073,11 +1166,8 @@
     }
 
     function handleFabClick() {
-      if (activeTab === 'yarn') {
-        openModal('add-yarn-modal');
-      } else if (activeTab === 'projects') {
-        openModal('add-idea-modal');
-      }
+      if (activeTab === 'yarn') openModal('add-yarn-modal');
+      else if (activeTab === 'projects') openModal('add-idea-modal');
     }
 
     function renderStats() {
@@ -1103,9 +1193,7 @@
       document.getElementById('weight-bars').innerHTML = sortedWeights.map(([weight, count]) => `
         <div class="bar-row">
           <div class="bar-label">${weight}</div>
-          <div class="bar-track">
-            <div class="bar-fill" style="width: ${(count / maxWeightCount) * 100}%"></div>
-          </div>
+          <div class="bar-track"><div class="bar-fill" style="width: ${(count / maxWeightCount) * 100}%"></div></div>
           <div class="bar-count">${count}</div>
         </div>
       `).join('');
@@ -1121,9 +1209,7 @@
       document.getElementById('colour-bars').innerHTML = sortedColours.map(([colour, count]) => `
         <div class="bar-row">
           <div class="bar-label">${colour}</div>
-          <div class="bar-track">
-            <div class="bar-fill" style="width: ${(count / maxColourCount) * 100}%; background: #b8a6d6;"></div>
-          </div>
+          <div class="bar-track"><div class="bar-fill" style="width: ${(count / maxColourCount) * 100}%; background: #b8a6d6;"></div></div>
           <div class="bar-count">${count}</div>
         </div>
       `).join('');
@@ -1131,12 +1217,22 @@
 
     function renderProjectCard(p) {
       const assignedSkeins = getAssignedYarnFor(p.name);
+      const isPatternUrl = p.pattern && (p.pattern.startsWith('http') || p.pattern.includes('.com') || p.pattern.includes('.it'));
+      const patternUrl = isPatternUrl ? (p.pattern.startsWith('http') ? p.pattern : 'https://' + p.pattern) : null;
+      const attachedPdf = projectPdfs[p.name];
+      const rowCount = projectRowCounters[p.name] !== undefined ? projectRowCounters[p.name] : null;
+
       return `
         <div class="card">
           <div class="card-head">
             <div>
               <div class="card-title">🧶 ${p.name}</div>
-              <div class="card-subtitle">Pattern: ${p.pattern || 'Freehand'} ${p.hook ? '• Hook ' + p.hook : ''}</div>
+              <div class="card-subtitle">
+                ${patternUrl 
+                  ? `<a href="${patternUrl}" target="_blank" class="btn-action" style="padding:2px 8px; font-size:0.75rem; margin-top:3px;">🔗 Open Pattern</a>`
+                  : `Pattern: ${p.pattern || 'Freehand'}`}
+                ${p.hook ? ' • Hook ' + p.hook : ''}
+              </div>
             </div>
             <span class="tag ${p.status === 'Complete' ? 'status-complete' : 'status-ready'}">${p.status}</span>
           </div>
@@ -1145,6 +1241,7 @@
           </div>
           ${p.notes ? `<div class="card-notes"><b>Note:</b> ${p.notes}</div>` : ''}
 
+          <!-- Assigned Yarn Section -->
           <div class="assigned-yarn-container">
             <div class="assigned-yarn-title">🧶 Assigned Yarn (${assignedSkeins.length})</div>
             <div class="assigned-yarn-list">
@@ -1159,8 +1256,25 @@
             </div>
           </div>
 
+          <!-- Pattern PDF & Row Counter Widget -->
+          ${(attachedPdf || rowCount !== null) ? `
+            <div class="row-counter-box">
+              <div>
+                <div style="font-size:0.75rem; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Row Counter</div>
+                <div class="counter-display">Row ${rowCount || 0}</div>
+                ${attachedPdf ? `<button class="btn-action" style="padding:2px 8px; font-size:0.75rem; margin-top:4px;" onclick="openProjectPdf('${p.name}')">📄 View PDF</button>` : ''}
+              </div>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <button class="qty-btn" onclick="adjustProjectRow('${p.name}', -1)">–</button>
+                <button class="qty-btn" style="background:var(--primary); color:#fff; border-color:var(--primary); width:32px; height:32px;" onclick="adjustProjectRow('${p.name}', 1)">+</button>
+                <button class="delete-btn" style="font-size:0.75rem;" onclick="resetProjectRow('${p.name}')">Reset</button>
+              </div>
+            </div>
+          ` : ''}
+
           <div class="card-actions">
             <button class="btn-action" onclick="openEditPlanner(${p.rowIndex})">✏️ Edit Project</button>
+            <button class="btn-action" onclick="attachPdfToProject('${p.name}')">📄 ${attachedPdf ? 'Replace Pattern/PDF' : 'Attach Pattern/PDF'}</button>
           </div>
         </div>
       `;
@@ -1185,17 +1299,29 @@
           return item.weight === currentFilter;
         });
 
-        document.getElementById('yarn-list').innerHTML = filtered.map(item => `
+        // Stack identical yarns together
+        const stacked = getStackedStash(filtered);
+
+        document.getElementById('yarn-list').innerHTML = stacked.map(item => `
           <div class="card">
             <div class="card-head">
               <div>
-                <div class="card-title">${item.name || 'Unnamed Skein'}</div>
+                <div class="card-title">
+                  ${item.name || 'Unnamed Skein'}
+                  ${item.count > 1 ? `<span class="qty-badge">x${item.count}</span>` : ''}
+                </div>
                 <div class="card-subtitle">${item.colour} ${item.shade ? '• Shade ' + item.shade : ''}</div>
               </div>
-              <span class="tag">${item.weight}</span>
+              <div style="display:flex; align-items:center; gap:6px;">
+                <button class="qty-btn" onclick='decrementYarnGroup(${JSON.stringify(item)})'>–</button>
+                <button class="qty-btn" onclick='incrementYarnGroup(${JSON.stringify(item)})'>+</button>
+                <span class="tag">${item.weight}</span>
+              </div>
             </div>
             <div class="tags">
               ${item.hook ? `<span class="tag">Hook: ${item.hook}mm</span>` : ''}
+              ${item.grams ? `<span class="tag">⚖️ ${item.grams}g</span>` : ''}
+              ${item.meters ? `<span class="tag">📏 ${item.meters}m</span>` : ''}
               ${item.isScrap ? `<span class="tag scrap">Scrap</span>` : '<span class="tag">Full Skein</span>'}
               ${item.hasTag ? `<span class="tag">🏷️ Tag</span>` : ''}
               ${item.project ? `<span class="tag project">🧵 ${item.project}</span>` : ''}
@@ -1204,6 +1330,9 @@
               <button class="btn-assign" onclick="openAssignPicker(${item.rowIndex})">
                 <span>${item.project ? '🧵 ' + item.project : '-- Assign Project --'}</span>
                 <span style="color:var(--text-muted); font-size:0.75rem;">▼</span>
+              </button>
+              <button class="btn-action" onclick="searchRavelryForYarn('${item.name}', '${item.weight}', '${item.colour}')">
+                🔍 Ravelry
               </button>
               <button class="delete-btn" onclick="deleteYarn(${item.rowIndex})">Delete</button>
             </div>
@@ -1226,6 +1355,7 @@
 
         document.getElementById('ideas-list').innerHTML = ideas.map(i => {
           const assignedSkeins = getAssignedYarnFor(i.name);
+          const hasLink = i.patternLink && i.patternLink.startsWith('http');
           return `
             <div class="card">
               <div class="card-head">
@@ -1238,7 +1368,7 @@
               <div class="tags">
                 ${i.yarn && i.yarn !== '-' ? `<span class="tag">Need: ${i.yarn}</span>` : ''}
                 ${i.hook && i.hook !== '-' ? `<span class="tag">Hook: ${i.hook}</span>` : ''}
-                ${i.patternLink && i.patternLink.startsWith('http') ? `<a href="${i.patternLink}" target="_blank" class="link-btn">🔗 Open Pattern</a>` : ''}
+                ${hasLink ? `<a href="${i.patternLink}" target="_blank" class="btn-action" style="padding:2px 8px; font-size:0.75rem;">🔗 Open Link</a>` : ''}
               </div>
               ${i.notes ? `<div class="card-notes"><b>Note:</b> ${i.notes}</div>` : ''}
 
@@ -1372,6 +1502,8 @@
         colour: document.getElementById('new-colour').value.trim() || 'Assorted',
         shade: document.getElementById('new-shade').value.trim(),
         hook: document.getElementById('new-hook').value.trim(),
+        grams: document.getElementById('new-grams').value.trim(),
+        meters: document.getElementById('new-meters').value.trim(),
         isScrap: document.getElementById('new-is-scrap').checked,
         hasTag: document.getElementById('new-has-tag').checked,
         project: document.getElementById('new-project').value.trim()
