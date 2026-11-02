@@ -126,7 +126,7 @@
       margin-top: 6px;
     }
 
-    /* Dedicated Assigned Yarn Section inside Project Cards */
+    /* Assigned Yarn Section */
     .assigned-yarn-container {
       margin-top: 10px;
       padding: 9px 12px;
@@ -221,6 +221,22 @@
       text-transform: uppercase;
       letter-spacing: 0.5px;
       margin: 16px 0 8px;
+    }
+    .archive-toggle-btn {
+      width: 100%;
+      background: #fff;
+      border: 1px dashed var(--border);
+      color: var(--text-muted);
+      font-size: 0.88rem;
+      font-weight: 600;
+      padding: 12px;
+      border-radius: 12px;
+      cursor: pointer;
+      margin: 16px 0 10px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
     }
     .rough-note-item {
       display: flex;
@@ -417,11 +433,17 @@
     <div id="yarn-list" class="card-list"></div>
 
     <div id="projects-view" style="display:none;">
-      <div class="section-title">✨ Project Planner</div>
+      <div class="section-title">✨ Active Projects</div>
       <div id="planner-list" class="card-list"></div>
 
       <div class="section-title">💡 Other Ideas & Wishlist</div>
       <div id="ideas-list" class="card-list"></div>
+
+      <!-- Completed Projects Archive Section -->
+      <button class="archive-toggle-btn" id="archive-toggle-btn" onclick="toggleCompletedArchive()">
+        📦 Show Completed Projects (<span id="completed-count">0</span>)
+      </button>
+      <div id="completed-list" class="card-list" style="display:none;"></div>
 
       <div class="section-title">📝 Quick Notes</div>
       <div id="notes-list"></div>
@@ -723,6 +745,7 @@
     let activeTab = 'yarn';
     let currentFilter = 'all';
     let skeinBeingAssigned = null;
+    let showCompletedArchive = false;
 
     function setSyncStatus(state, text) {
       const el = document.getElementById('sync-indicator');
@@ -796,14 +819,27 @@
       return Array.from(set).filter(Boolean).sort((a, b) => a.localeCompare(b));
     }
 
-    // Helper to get all yarn currently assigned to a given project name
     function getAssignedYarnFor(projectName) {
       if (!projectName) return [];
       const cleanTarget = projectName.trim().toLowerCase();
       return stash.filter(s => s && s.project && s.project.trim().toLowerCase() === cleanTarget);
     }
 
-    // Opens the bottom sheet picker
+    function toggleCompletedArchive() {
+      showCompletedArchive = !showCompletedArchive;
+      const archiveContainer = document.getElementById('completed-list');
+      const toggleBtn = document.getElementById('archive-toggle-btn');
+      
+      if (showCompletedArchive) {
+        archiveContainer.style.display = 'flex';
+        toggleBtn.innerHTML = '📦 Hide Completed Projects';
+      } else {
+        archiveContainer.style.display = 'none';
+        const completedCount = planner.filter(p => p.status && p.status.toLowerCase() === 'complete').length;
+        toggleBtn.innerHTML = `📦 Show Completed Projects (${completedCount})`;
+      }
+    }
+
     function openAssignPicker(rowIndex) {
       skeinBeingAssigned = rowIndex;
       const item = stash.find(s => s.rowIndex === rowIndex);
@@ -934,6 +970,43 @@
       `).join('');
     }
 
+    function renderProjectCard(p) {
+      const assignedSkeins = getAssignedYarnFor(p.name);
+      return `
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <div class="card-title">🧶 ${p.name}</div>
+              <div class="card-subtitle">Pattern: ${p.pattern} ${p.hook ? '• Hook ' + p.hook : ''}</div>
+            </div>
+            <span class="tag ${p.status === 'Complete' ? 'status-complete' : 'status-ready'}">${p.status}</span>
+          </div>
+          <div class="tags">
+            ${p.yarn ? `<span class="tag">Spec: ${p.yarn}</span>` : ''}
+          </div>
+          ${p.notes ? `<div class="card-notes"><b>Note:</b> ${p.notes}</div>` : ''}
+
+          <div class="assigned-yarn-container">
+            <div class="assigned-yarn-title">🧶 Assigned Yarn (${assignedSkeins.length})</div>
+            <div class="assigned-yarn-list">
+              ${assignedSkeins.length > 0 
+                ? assignedSkeins.map(s => `
+                    <div class="assigned-yarn-chip">
+                      <b>${s.name}</b> (${s.colour || ''} ${s.weight || ''}${s.isScrap ? ' • scrap' : ''})
+                    </div>
+                  `).join('')
+                : '<span style="font-size:0.8rem; color:var(--text-muted); font-style:italic;">None assigned yet</span>'
+              }
+            </div>
+          </div>
+
+          <div class="card-actions">
+            <button class="btn-action" onclick="openEditPlanner(${p.rowIndex})">✏️ Edit Project</button>
+          </div>
+        </div>
+      `;
+    }
+
     function render() {
       if (activeTab === 'stats') {
         renderStats();
@@ -978,46 +1051,24 @@
           </div>
         `).join('');
       } else if (activeTab === 'projects') {
-        // Planner List with Assigned Yarn rendering
-        document.getElementById('planner-list').innerHTML = planner.map(p => {
-          const assignedSkeins = getAssignedYarnFor(p.name);
-          return `
-            <div class="card">
-              <div class="card-head">
-                <div>
-                  <div class="card-title">🧶 ${p.name}</div>
-                  <div class="card-subtitle">Pattern: ${p.pattern} ${p.hook ? '• Hook ' + p.hook : ''}</div>
-                </div>
-                <span class="tag ${p.status === 'Complete' ? 'status-complete' : 'status-ready'}">${p.status}</span>
-              </div>
-              <div class="tags">
-                ${p.yarn ? `<span class="tag">Spec: ${p.yarn}</span>` : ''}
-              </div>
-              ${p.notes ? `<div class="card-notes"><b>Note:</b> ${p.notes}</div>` : ''}
+        // Split Planner into Active vs Completed
+        const activeProjects = planner.filter(p => !p.status || p.status.toLowerCase() !== 'complete');
+        const completedProjects = planner.filter(p => p.status && p.status.toLowerCase() === 'complete');
 
-              <!-- Assigned Yarn Section -->
-              <div class="assigned-yarn-container">
-                <div class="assigned-yarn-title">🧶 Assigned Yarn (${assignedSkeins.length})</div>
-                <div class="assigned-yarn-list">
-                  ${assignedSkeins.length > 0 
-                    ? assignedSkeins.map(s => `
-                        <div class="assigned-yarn-chip">
-                          <b>${s.name}</b> (${s.colour || ''} ${s.weight || ''}${s.isScrap ? ' • scrap' : ''})
-                        </div>
-                      `).join('')
-                    : '<span style="font-size:0.8rem; color:var(--text-muted); font-style:italic;">None assigned yet</span>'
-                  }
-                </div>
-              </div>
+        document.getElementById('completed-count').innerText = completedProjects.length;
+        if (!showCompletedArchive) {
+          document.getElementById('archive-toggle-btn').innerHTML = `📦 Show Completed Projects (${completedProjects.length})`;
+        }
 
-              <div class="card-actions">
-                <button class="btn-action" onclick="openEditPlanner(${p.rowIndex})">✏️ Edit Project</button>
-              </div>
-            </div>
-          `;
-        }).join('');
+        // Active Projects
+        document.getElementById('planner-list').innerHTML = activeProjects.length > 0 
+          ? activeProjects.map(renderProjectCard).join('')
+          : '<div style="font-size:0.85rem; color:var(--text-muted); font-style:italic; padding:8px 0;">No active projects right now.</div>';
 
-        // Ideas List with Assigned Yarn rendering
+        // Completed Projects (Hidden inside archive accordion)
+        document.getElementById('completed-list').innerHTML = completedProjects.map(renderProjectCard).join('');
+
+        // Ideas List
         document.getElementById('ideas-list').innerHTML = ideas.map(i => {
           const assignedSkeins = getAssignedYarnFor(i.name);
           return `
@@ -1036,7 +1087,6 @@
               </div>
               ${i.notes ? `<div class="card-notes"><b>Note:</b> ${i.notes}</div>` : ''}
 
-              <!-- Assigned Yarn Section -->
               <div class="assigned-yarn-container">
                 <div class="assigned-yarn-title">🧶 Assigned Yarn (${assignedSkeins.length})</div>
                 <div class="assigned-yarn-list">
