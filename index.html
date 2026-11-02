@@ -135,13 +135,13 @@
       margin-left: 6px;
     }
     .qty-btn {
-      width: 26px;
-      height: 26px;
+      width: 28px;
+      height: 28px;
       border-radius: 50%;
       border: 1px solid var(--border);
       background: #fff;
       color: var(--text);
-      font-size: 0.95rem;
+      font-size: 1rem;
       font-weight: 700;
       display: inline-flex;
       align-items: center;
@@ -205,7 +205,6 @@
       gap: 4px;
     }
 
-    /* Redesigned Row Counter Banner */
     .row-counter-card {
       margin-top: 10px;
       padding: 10px 14px;
@@ -239,13 +238,13 @@
       gap: 8px;
     }
     .step-btn {
-      width: 38px;
-      height: 38px;
+      width: 40px;
+      height: 40px;
       border-radius: 10px;
       border: 1px solid var(--border);
       background: #fff;
       color: var(--text);
-      font-size: 1.2rem;
+      font-size: 1.25rem;
       font-weight: 700;
       display: flex;
       align-items: center;
@@ -259,7 +258,6 @@
     }
     .step-btn:active { opacity: 0.8; }
 
-    /* Dedicated PDF File Pill inside Card */
     .pdf-attachment-bar {
       margin-top: 8px;
       padding: 8px 12px;
@@ -366,7 +364,6 @@
       margin-bottom: 8px;
     }
 
-    /* Floating Add Button positioned safely */
     .fab-add {
       position: fixed;
       bottom: 76px;
@@ -771,7 +768,7 @@
         </div>
       </div>
       <div class="form-group">
-        <label>Status / Progress (Text)</label>
+        <label>Status / Progress</label>
         <input type="text" id="idea-doing" list="status-options" placeholder="e.g. Not started, Yes, In progress" />
       </div>
       <div class="form-group">
@@ -798,7 +795,7 @@
       </div>
       <div style="display:flex; gap:10px;">
         <div class="form-group" style="flex:1;">
-          <label>Status / Progress (Text)</label>
+          <label>Status / Progress</label>
           <input type="text" id="edit-p-status" list="status-options" placeholder="e.g. Ready to go, In progress, Complete" />
         </div>
         <div class="form-group" style="flex:1;">
@@ -854,7 +851,7 @@
         </div>
       </div>
       <div class="form-group">
-        <label>Status / Progress (Text)</label>
+        <label>Status / Progress</label>
         <input type="text" id="edit-i-doing" list="status-options" placeholder="e.g. Not started, Yes, Complete" />
       </div>
       <div class="form-group">
@@ -900,7 +897,7 @@
     let skeinBeingAssigned = null;
     let showCompletedArchive = false;
 
-    // --- IndexedDB for Reliable, Unlimited PDF File Storage ---
+    // --- IndexedDB for Reliable Persistent PDF Storage ---
     function openDb() {
       return new Promise((resolve, reject) => {
         const req = indexedDB.open("CrochetPatternFilesDB", 1);
@@ -1089,24 +1086,27 @@
       window.open(url, '_blank');
     }
 
-    // Row Counter
-    function adjustProjectRow(projectName, delta) {
+    // Row Counter: Uses explicit encoded names to avoid syntax errors
+    window.adjustProjectRow = function(encodedName, delta) {
+      const projectName = decodeURIComponent(encodedName);
       const current = projectRowCounters[projectName] || 0;
       projectRowCounters[projectName] = Math.max(0, current + delta);
       localStorage.setItem('row_counters_data', JSON.stringify(projectRowCounters));
       render();
-    }
+    };
 
-    function resetProjectRow(projectName) {
-      if (confirm(`Reset row counter for ${projectName} back to 0?`)) {
+    window.resetProjectRow = function(encodedName) {
+      const projectName = decodeURIComponent(encodedName);
+      if (confirm(`Reset row counter for "${projectName}" back to 0?`)) {
         projectRowCounters[projectName] = 0;
         localStorage.setItem('row_counters_data', JSON.stringify(projectRowCounters));
         render();
       }
-    }
+    };
 
     // PDF / Pattern File Upload via IndexedDB
-    function attachPdfToProject(projectName) {
+    window.attachPdfToProject = function(encodedName) {
+      const projectName = decodeURIComponent(encodedName);
       const input = document.createElement('input');
       input.type = 'file';
       input.accept = 'application/pdf,image/*';
@@ -1117,46 +1117,50 @@
         try {
           await savePdfBlobToDb(projectName, file);
           projectPdfsMeta[projectName] = { name: file.name, size: file.size };
-          if (projectRowCounters[projectName] === undefined) projectRowCounters[projectName] = 0;
+          if (projectRowCounters[projectName] === undefined) {
+            projectRowCounters[projectName] = 0;
+          }
 
           localStorage.setItem('project_pdfs_meta', JSON.stringify(projectPdfsMeta));
           localStorage.setItem('row_counters_data', JSON.stringify(projectRowCounters));
-          render();
+          render(); // Auto re-renders immediately!
         } catch (err) {
           alert('Could not save file to device storage.');
         }
       };
       input.click();
-    }
+    };
 
-    async function openProjectPdf(projectName) {
+    window.openProjectPdf = async function(encodedName) {
+      const projectName = decodeURIComponent(encodedName);
       try {
         const blob = await getPdfBlobFromDb(projectName);
         if (blob) {
           const url = URL.createObjectURL(blob);
-          const win = window.open(url, '_blank');
-          if (!win) {
-            // Fallback for pop-up blockers on mobile:
-            const a = document.createElement('a');
-            a.href = url;
-            a.target = '_blank';
-            a.click();
-          }
+          const a = document.createElement('a');
+          a.href = url;
+          a.target = '_blank';
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
         } else {
           alert('PDF could not be found. Please re-attach the file.');
         }
       } catch (e) {
         alert('Error reading PDF file.');
       }
-    }
+    };
 
-    async function removeProjectPdf(projectName) {
-      if (!confirm(`Remove attached pattern for "${projectName}"?`)) return;
+    window.removeProjectPdf = async function(encodedName) {
+      const projectName = decodeURIComponent(encodedName);
+      if (!confirm(`Remove attached pattern and row counter for "${projectName}"?`)) return;
       await removePdfBlobFromDb(projectName);
       delete projectPdfsMeta[projectName];
+      delete projectRowCounters[projectName]; // Removes row counter when PDF is removed
       localStorage.setItem('project_pdfs_meta', JSON.stringify(projectPdfsMeta));
+      localStorage.setItem('row_counters_data', JSON.stringify(projectRowCounters));
       render();
-    }
+    };
 
     function getStackedStash(rawList) {
       const map = new Map();
@@ -1180,7 +1184,8 @@
       return Array.from(map.values());
     }
 
-    function incrementYarnGroup(yarn) {
+    window.incrementYarnGroup = function(yarnStr) {
+      const yarn = JSON.parse(decodeURIComponent(yarnStr));
       const newEntry = {
         name: yarn.name,
         weight: yarn.weight,
@@ -1197,9 +1202,10 @@
       localStorage.setItem('stash_data', JSON.stringify(stash));
       render();
       postAction({ action: 'ADD_YARN', yarn: newEntry });
-    }
+    };
 
-    function decrementYarnGroup(yarn) {
+    window.decrementYarnGroup = function(yarnStr) {
+      const yarn = JSON.parse(decodeURIComponent(yarnStr));
       if (yarn.rowIndices && yarn.rowIndices.length > 0) {
         const removeRowIndex = yarn.rowIndices[yarn.rowIndices.length - 1];
         stash = stash.filter(i => i.rowIndex !== removeRowIndex);
@@ -1207,7 +1213,7 @@
         render();
         postAction({ action: 'DELETE_YARN', rowIndex: removeRowIndex });
       }
-    }
+    };
 
     function openAssignPicker(rowIndex) {
       skeinBeingAssigned = rowIndex;
@@ -1345,7 +1351,9 @@
       const isPatternUrl = p.pattern && (p.pattern.startsWith('http') || p.pattern.includes('.com') || p.pattern.includes('.it'));
       const patternUrl = isPatternUrl ? (p.pattern.startsWith('http') ? p.pattern : 'https://' + p.pattern) : null;
       const pdfMeta = projectPdfsMeta[p.name];
+      const hasPdf = Boolean(pdfMeta);
       const rowCount = projectRowCounters[p.name] !== undefined ? projectRowCounters[p.name] : null;
+      const encName = encodeURIComponent(p.name);
 
       return `
         <div class="card">
@@ -1382,34 +1390,34 @@
           </div>
 
           <!-- Attached PDF File Info Bar -->
-          ${pdfMeta ? `
+          ${hasPdf ? `
             <div class="pdf-attachment-bar">
               <span class="pdf-name-text">📄 ${pdfMeta.name}</span>
               <div style="display:flex; gap:6px;">
-                <button class="btn-action" style="padding:4px 10px; font-size:0.75rem;" onclick="openProjectPdf('${p.name}')">View File</button>
-                <button class="delete-btn" style="padding:2px 6px; font-size:0.85rem;" onclick="removeProjectPdf('${p.name}')">✕</button>
+                <button class="btn-action" style="padding:4px 10px; font-size:0.75rem;" onclick="openProjectPdf('${encName}')">View File</button>
+                <button class="delete-btn" style="padding:2px 6px; font-size:0.85rem;" onclick="removeProjectPdf('${encName}')">✕</button>
               </div>
             </div>
           ` : ''}
 
-          <!-- Wide Clean Row Counter -->
-          ${(pdfMeta || rowCount !== null) ? `
+          <!-- Row Counter: ONLY shows if PDF is attached -->
+          ${hasPdf ? `
             <div class="row-counter-card">
               <div class="row-counter-info">
                 <span class="row-counter-label">Row Counter</span>
                 <span class="row-counter-num">Row ${rowCount || 0}</span>
               </div>
               <div class="row-counter-controls">
-                <button class="step-btn" onclick="adjustProjectRow('${p.name}', -1)">–</button>
-                <button class="step-btn plus" onclick="adjustProjectRow('${p.name}', 1)">+</button>
-                <button class="delete-btn" style="font-size:0.75rem; padding:4px;" onclick="resetProjectRow('${p.name}')">Reset</button>
+                <button class="step-btn" onclick="adjustProjectRow('${encName}', -1)">–</button>
+                <button class="step-btn plus" onclick="adjustProjectRow('${encName}', 1)">+</button>
+                <button class="delete-btn" style="font-size:0.75rem; padding:4px;" onclick="resetProjectRow('${encName}')">Reset</button>
               </div>
             </div>
           ` : ''}
 
           <div class="card-actions">
             <button class="btn-action" onclick="openEditPlanner(${p.rowIndex})">✏️ Edit Project</button>
-            <button class="btn-action" onclick="attachPdfToProject('${p.name}')">📄 ${pdfMeta ? 'Replace PDF' : 'Attach PDF / Pattern'}</button>
+            <button class="btn-action" onclick="attachPdfToProject('${encName}')">📄 ${hasPdf ? 'Replace PDF' : 'Attach PDF / Pattern'}</button>
           </div>
         </div>
       `;
@@ -1436,42 +1444,45 @@
 
         const stacked = getStackedStash(filtered);
 
-        document.getElementById('yarn-list').innerHTML = stacked.map(item => `
-          <div class="card">
-            <div class="card-head">
-              <div>
-                <div class="card-title">
-                  ${item.name || 'Unnamed Skein'}
-                  ${item.count > 1 ? `<span class="qty-badge">x${item.count}</span>` : ''}
+        document.getElementById('yarn-list').innerHTML = stacked.map(item => {
+          const encYarn = encodeURIComponent(JSON.stringify(item));
+          return `
+            <div class="card">
+              <div class="card-head">
+                <div>
+                  <div class="card-title">
+                    ${item.name || 'Unnamed Skein'}
+                    ${item.count > 1 ? `<span class="qty-badge">x${item.count}</span>` : ''}
+                  </div>
+                  <div class="card-subtitle">${item.colour} ${item.shade ? '• Shade ' + item.shade : ''}</div>
                 </div>
-                <div class="card-subtitle">${item.colour} ${item.shade ? '• Shade ' + item.shade : ''}</div>
+                <div style="display:flex; align-items:center; gap:6px;">
+                  <button class="qty-btn" onclick="decrementYarnGroup('${encYarn}')">–</button>
+                  <button class="qty-btn" onclick="incrementYarnGroup('${encYarn}')">+</button>
+                  <span class="tag">${item.weight}</span>
+                </div>
               </div>
-              <div style="display:flex; align-items:center; gap:6px;">
-                <button class="qty-btn" onclick='decrementYarnGroup(${JSON.stringify(item)})'>–</button>
-                <button class="qty-btn" onclick='incrementYarnGroup(${JSON.stringify(item)})'>+</button>
-                <span class="tag">${item.weight}</span>
+              <div class="tags">
+                ${item.hook ? `<span class="tag">Hook: ${item.hook}mm</span>` : ''}
+                ${item.grams ? `<span class="tag">⚖️ ${item.grams}g</span>` : ''}
+                ${item.meters ? `<span class="tag">📏 ${item.meters}m</span>` : ''}
+                ${item.isScrap ? `<span class="tag scrap">Scrap</span>` : '<span class="tag">Full Skein</span>'}
+                ${item.hasTag ? `<span class="tag">🏷️ Tag</span>` : ''}
+                ${item.project ? `<span class="tag project">🧵 ${item.project}</span>` : ''}
+              </div>
+              <div class="card-actions">
+                <button class="btn-assign" onclick="openAssignPicker(${item.rowIndex})">
+                  <span>${item.project ? '🧵 ' + item.project : '-- Assign Project --'}</span>
+                  <span style="color:var(--text-muted); font-size:0.75rem;">▼</span>
+                </button>
+                <button class="btn-action" onclick="searchRavelryByWeightAndYardage('${item.weight}', '${item.meters || ''}')">
+                  🔍 Ravelry
+                </button>
+                <button class="delete-btn" onclick="deleteYarn(${item.rowIndex})">Delete</button>
               </div>
             </div>
-            <div class="tags">
-              ${item.hook ? `<span class="tag">Hook: ${item.hook}mm</span>` : ''}
-              ${item.grams ? `<span class="tag">⚖️ ${item.grams}g</span>` : ''}
-              ${item.meters ? `<span class="tag">📏 ${item.meters}m</span>` : ''}
-              ${item.isScrap ? `<span class="tag scrap">Scrap</span>` : '<span class="tag">Full Skein</span>'}
-              ${item.hasTag ? `<span class="tag">🏷️ Tag</span>` : ''}
-              ${item.project ? `<span class="tag project">🧵 ${item.project}</span>` : ''}
-            </div>
-            <div class="card-actions">
-              <button class="btn-assign" onclick="openAssignPicker(${item.rowIndex})">
-                <span>${item.project ? '🧵 ' + item.project : '-- Assign Project --'}</span>
-                <span style="color:var(--text-muted); font-size:0.75rem;">▼</span>
-              </button>
-              <button class="btn-action" onclick="searchRavelryByWeightAndYardage('${item.weight}', '${item.meters || ''}')">
-                🔍 Ravelry
-              </button>
-              <button class="delete-btn" onclick="deleteYarn(${item.rowIndex})">Delete</button>
-            </div>
-          </div>
-        `).join('');
+          `;
+        }).join('');
       } else if (activeTab === 'projects') {
         const activeProjects = planner.filter(p => !p.status || p.status.toLowerCase() !== 'complete');
         const completedProjects = planner.filter(p => p.status && p.status.toLowerCase() === 'complete');
@@ -1491,7 +1502,9 @@
           const assignedSkeins = getAssignedYarnFor(i.name);
           const hasLink = i.patternLink && i.patternLink.startsWith('http');
           const pdfMeta = projectPdfsMeta[i.name];
+          const hasPdf = Boolean(pdfMeta);
           const rowCount = projectRowCounters[i.name] !== undefined ? projectRowCounters[i.name] : null;
+          const encName = encodeURIComponent(i.name);
 
           return `
             <div class="card">
@@ -1523,33 +1536,33 @@
                 </div>
               </div>
 
-              ${pdfMeta ? `
+              ${hasPdf ? `
                 <div class="pdf-attachment-bar">
                   <span class="pdf-name-text">📄 ${pdfMeta.name}</span>
                   <div style="display:flex; gap:6px;">
-                    <button class="btn-action" style="padding:4px 10px; font-size:0.75rem;" onclick="openProjectPdf('${i.name}')">View File</button>
-                    <button class="delete-btn" style="padding:2px 6px; font-size:0.85rem;" onclick="removeProjectPdf('${i.name}')">✕</button>
+                    <button class="btn-action" style="padding:4px 10px; font-size:0.75rem;" onclick="openProjectPdf('${encName}')">View File</button>
+                    <button class="delete-btn" style="padding:2px 6px; font-size:0.85rem;" onclick="removeProjectPdf('${encName}')">✕</button>
                   </div>
                 </div>
               ` : ''}
 
-              ${(pdfMeta || rowCount !== null) ? `
+              ${hasPdf ? `
                 <div class="row-counter-card">
                   <div class="row-counter-info">
                     <span class="row-counter-label">Row Counter</span>
                     <span class="row-counter-num">Row ${rowCount || 0}</span>
                   </div>
                   <div class="row-counter-controls">
-                    <button class="step-btn" onclick="adjustProjectRow('${i.name}', -1)">–</button>
-                    <button class="step-btn plus" onclick="adjustProjectRow('${i.name}', 1)">+</button>
-                    <button class="delete-btn" style="font-size:0.75rem; padding:4px;" onclick="resetProjectRow('${i.name}')">Reset</button>
+                    <button class="step-btn" onclick="adjustProjectRow('${encName}', -1)">–</button>
+                    <button class="step-btn plus" onclick="adjustProjectRow('${encName}', 1)">+</button>
+                    <button class="delete-btn" style="font-size:0.75rem; padding:4px;" onclick="resetProjectRow('${encName}')">Reset</button>
                   </div>
                 </div>
               ` : ''}
 
               <div class="card-actions">
                 <button class="btn-action" onclick="openEditIdea(${i.rowIndex})">✏️ Edit Idea</button>
-                <button class="btn-action" onclick="attachPdfToProject('${i.name}')">📄 ${pdfMeta ? 'Replace PDF' : 'Attach PDF / Pattern'}</button>
+                <button class="btn-action" onclick="attachPdfToProject('${encName}')">📄 ${hasPdf ? 'Replace PDF' : 'Attach PDF / Pattern'}</button>
               </div>
             </div>
           `;
@@ -1590,6 +1603,7 @@
       };
       const target = planner.find(p => p.rowIndex === rowIndex);
       if (target) Object.assign(target, item);
+      localStorage.setItem('planner_data', JSON.stringify(planner));
       render();
       closeModal('edit-planner-modal');
       postAction({ action: 'UPDATE_PLANNER_ROW', rowIndex, item });
@@ -1599,6 +1613,7 @@
       if (!confirm("Are you sure you want to delete this project?")) return;
       const rowIndex = Number(document.getElementById('edit-p-row').value);
       planner = planner.filter(p => p.rowIndex !== rowIndex);
+      localStorage.setItem('planner_data', JSON.stringify(planner));
       render();
       closeModal('edit-planner-modal');
       postAction({ action: 'DELETE_ROW', rowIndex });
@@ -1634,6 +1649,7 @@
       };
       const target = ideas.find(i => i.rowIndex === rowIndex);
       if (target) Object.assign(target, item);
+      localStorage.setItem('ideas_data', JSON.stringify(ideas));
       render();
       closeModal('edit-idea-modal');
       postAction({ action: 'UPDATE_IDEA_ROW', rowIndex, item });
@@ -1643,6 +1659,7 @@
       if (!confirm("Are you sure you want to delete this idea?")) return;
       const rowIndex = Number(document.getElementById('edit-i-row').value);
       ideas = ideas.filter(i => i.rowIndex !== rowIndex);
+      localStorage.setItem('ideas_data', JSON.stringify(ideas));
       render();
       closeModal('edit-idea-modal');
       postAction({ action: 'DELETE_ROW', rowIndex });
@@ -1651,6 +1668,7 @@
     function deleteYarn(rowIndex) {
       if (!confirm("Remove this yarn from stock?")) return;
       stash = stash.filter(i => i.rowIndex !== rowIndex);
+      localStorage.setItem('stash_data', JSON.stringify(stash));
       render();
       postAction({ action: 'DELETE_YARN', rowIndex });
     }
@@ -1671,6 +1689,7 @@
         project: document.getElementById('new-project').value.trim()
       };
       stash.unshift({ ...yarn, rowIndex: stash.length + 2 });
+      localStorage.setItem('stash_data', JSON.stringify(stash));
       render();
       closeModal('add-yarn-modal');
       postAction({ action: 'ADD_YARN', yarn });
@@ -1687,9 +1706,11 @@
         yarn: document.getElementById('idea-yarn').value.trim(),
         hook: document.getElementById('idea-hook').value.trim(),
         doing: document.getElementById('idea-doing').value.trim() || 'Not started',
-        notes: document.getElementById('idea-notes').value.trim()
+        notes: document.getElementById('idea-notes').value.trim(),
+        rowIndex: ideas.length + 15
       };
       ideas.unshift(idea);
+      localStorage.setItem('ideas_data', JSON.stringify(ideas));
       render();
       closeModal('add-idea-modal');
       postAction({ action: 'ADD_IDEA', idea });
@@ -1700,6 +1721,7 @@
       const note = input.value.trim();
       if (!note) return;
       roughNotes.push(note);
+      localStorage.setItem('notes_data', JSON.stringify(roughNotes));
       input.value = '';
       render();
       postAction({ action: 'ADD_NOTE', note });
@@ -1708,6 +1730,7 @@
     function deleteQuickNote(idx) {
       const noteObj = roughNotes[idx];
       roughNotes.splice(idx, 1);
+      localStorage.setItem('notes_data', JSON.stringify(roughNotes));
       render();
       if (typeof noteObj === 'object' && noteObj.rowIndex) {
         postAction({ action: 'DELETE_ROW', rowIndex: noteObj.rowIndex });
