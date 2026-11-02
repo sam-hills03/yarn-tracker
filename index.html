@@ -1182,6 +1182,19 @@
           existing.rowIndices.push(item.rowIndex);
         }
       });
+
+      // Alphabetical sorting: primary by Name (A-Z), secondary by Colour
+      return Array.from(map.values()).sort((a, b) => {
+        const nameA = (a.name || '').trim().toLowerCase();
+        const nameB = (b.name || '').trim().toLowerCase();
+        if (nameA !== nameB) {
+          return nameA.localeCompare(nameB);
+        }
+        const colA = (a.colour || '').trim().toLowerCase();
+        const colB = (b.colour || '').trim().toLowerCase();
+        return colA.localeCompare(colB);
+      });
+    }
       return Array.from(map.values());
     }
 
@@ -1199,7 +1212,8 @@
         grams: yarn.grams || "",
         meters: yarn.meters || ""
       };
-      stash.unshift({ ...newEntry, rowIndex: stash.length + 2 });
+      // Append to the end of array instead of unshift, keeping natural order intact
+      stash.push({ ...newEntry, rowIndex: stash.length + 2 });
       localStorage.setItem('stash_data', JSON.stringify(stash));
       render();
       postAction({ action: 'ADD_YARN', yarn: newEntry });
