@@ -819,8 +819,16 @@
 
     function getAssignedYarnFor(projectName) {
       if (!projectName) return [];
-      const cleanTarget = projectName.trim().toLowerCase();
-      return stash.filter(s => s && s.project && s.project.trim().toLowerCase() === cleanTarget);
+      
+      // Clean string helper: lowercase and strip extra inner/outer spaces
+      const clean = (str) => String(str || '').toLowerCase().replace(/\s+/g, ' ').trim();
+      const target = clean(projectName);
+
+      return stash.filter(s => {
+        if (!s || !s.project) return false;
+        const assignedProj = clean(s.project);
+        return assignedProj === target;
+      });
     }
 
     function toggleCompletedArchive() {
@@ -860,7 +868,11 @@
     function selectProjectFromPicker(projectName) {
       if (!skeinBeingAssigned) return;
       const item = stash.find(s => s.rowIndex === skeinBeingAssigned);
-      if (item) item.project = projectName;
+      if (item) {
+        item.project = projectName;
+        // Save to local storage immediately so projects tab sees it instantly
+        localStorage.setItem('stash_data', JSON.stringify(stash));
+      }
       render();
       closeModal('assign-picker-modal');
       postAction({ action: 'UPDATE_PROJECT', rowIndex: skeinBeingAssigned, project: projectName });
