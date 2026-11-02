@@ -125,6 +125,44 @@
       border-radius: 8px;
       margin-top: 6px;
     }
+
+    /* Dedicated Assigned Yarn Section inside Project Cards */
+    .assigned-yarn-container {
+      margin-top: 10px;
+      padding: 9px 12px;
+      background: #faf8f5;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+    }
+    .assigned-yarn-title {
+      font-size: 0.74rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .assigned-yarn-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .assigned-yarn-chip {
+      font-size: 0.78rem;
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 3px 8px;
+      font-weight: 600;
+      color: var(--text);
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
     .card-actions {
       display: flex;
       justify-content: space-between;
@@ -575,7 +613,7 @@
       </div>
       <div style="display:flex; gap:10px;">
         <div class="form-group" style="flex:1;">
-          <label>Yarn</label>
+          <label>Yarn Pattern Spec</label>
           <input type="text" id="edit-p-yarn" />
         </div>
         <div class="form-group" style="flex:1;">
@@ -647,7 +685,6 @@
   <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbyL4si7OB71uYZJnrrtJb79gaitfdGcpkRwtM_T8S_kAhZBHFf3mhpLnMg4KB7b2oqZyw/exec";
 
-    // Guaranteed list of projects directly from your Ts Yarn document
     const KNOWN_PROJECTS = [
       "Bedside hanger",
       "Floral fillet tapestry",
@@ -734,7 +771,6 @@
       }
     }
 
-    // Gathers and dedupes all project names
     function getAllProjectsList() {
       const set = new Set();
       KNOWN_PROJECTS.forEach(name => set.add(name.trim()));
@@ -760,7 +796,14 @@
       return Array.from(set).filter(Boolean).sort((a, b) => a.localeCompare(b));
     }
 
-    // Opens the clean bottom-sheet picker
+    // Helper to get all yarn currently assigned to a given project name
+    function getAssignedYarnFor(projectName) {
+      if (!projectName) return [];
+      const cleanTarget = projectName.trim().toLowerCase();
+      return stash.filter(s => s && s.project && s.project.trim().toLowerCase() === cleanTarget);
+    }
+
+    // Opens the bottom sheet picker
     function openAssignPicker(rowIndex) {
       skeinBeingAssigned = rowIndex;
       const item = stash.find(s => s.rowIndex === rowIndex);
@@ -773,7 +816,7 @@
       container.innerHTML = allProjects.map(proj => `
         <div class="picker-item" onclick="selectProjectFromPicker('${proj.replace(/'/g, "\\'")}')">
           <span>🧵 ${proj}</span>
-          ${item && item.project === proj ? '<span style="color:var(--primary);">✓ Active</span>' : '<span style="color:var(--text-muted); font-size:0.8rem;">Select →</span>'}
+          ${item && item.project && item.project.trim().toLowerCase() === proj.trim().toLowerCase() ? '<span style="color:var(--primary);">✓ Active</span>' : '<span style="color:var(--text-muted); font-size:0.8rem;">Select →</span>'}
         </div>
       `).join('');
 
@@ -935,47 +978,85 @@
           </div>
         `).join('');
       } else if (activeTab === 'projects') {
-        // Planner List
-        document.getElementById('planner-list').innerHTML = planner.map(p => `
-          <div class="card">
-            <div class="card-head">
-              <div>
-                <div class="card-title">🧶 ${p.name}</div>
-                <div class="card-subtitle">Pattern: ${p.pattern} ${p.hook ? '• Hook ' + p.hook : ''}</div>
+        // Planner List with Assigned Yarn rendering
+        document.getElementById('planner-list').innerHTML = planner.map(p => {
+          const assignedSkeins = getAssignedYarnFor(p.name);
+          return `
+            <div class="card">
+              <div class="card-head">
+                <div>
+                  <div class="card-title">🧶 ${p.name}</div>
+                  <div class="card-subtitle">Pattern: ${p.pattern} ${p.hook ? '• Hook ' + p.hook : ''}</div>
+                </div>
+                <span class="tag ${p.status === 'Complete' ? 'status-complete' : 'status-ready'}">${p.status}</span>
               </div>
-              <span class="tag ${p.status === 'Complete' ? 'status-complete' : 'status-ready'}">${p.status}</span>
-            </div>
-            <div class="tags">
-              ${p.yarn ? `<span class="tag">Yarn: ${p.yarn}</span>` : ''}
-            </div>
-            ${p.notes ? `<div class="card-notes"><b>Note:</b> ${p.notes}</div>` : ''}
-            <div class="card-actions">
-              <button class="btn-action" onclick="openEditPlanner(${p.rowIndex})">✏️ Edit</button>
-            </div>
-          </div>
-        `).join('');
+              <div class="tags">
+                ${p.yarn ? `<span class="tag">Spec: ${p.yarn}</span>` : ''}
+              </div>
+              ${p.notes ? `<div class="card-notes"><b>Note:</b> ${p.notes}</div>` : ''}
 
-        // Ideas List
-        document.getElementById('ideas-list').innerHTML = ideas.map(i => `
-          <div class="card">
-            <div class="card-head">
-              <div>
-                <div class="card-title">💡 ${i.name}</div>
-                <div class="card-subtitle">${i.where || ''} ${i.paid > 0 ? '• £' + i.paid : ''}</div>
+              <!-- Assigned Yarn Section -->
+              <div class="assigned-yarn-container">
+                <div class="assigned-yarn-title">🧶 Assigned Yarn (${assignedSkeins.length})</div>
+                <div class="assigned-yarn-list">
+                  ${assignedSkeins.length > 0 
+                    ? assignedSkeins.map(s => `
+                        <div class="assigned-yarn-chip">
+                          <b>${s.name}</b> (${s.colour || ''} ${s.weight || ''}${s.isScrap ? ' • scrap' : ''})
+                        </div>
+                      `).join('')
+                    : '<span style="font-size:0.8rem; color:var(--text-muted); font-style:italic;">None assigned yet</span>'
+                  }
+                </div>
               </div>
-              <span class="tag ${i.doing === 'Yes' ? 'status-doing' : ''}">${i.doing}</span>
+
+              <div class="card-actions">
+                <button class="btn-action" onclick="openEditPlanner(${p.rowIndex})">✏️ Edit Project</button>
+              </div>
             </div>
-            <div class="tags">
-              ${i.yarn && i.yarn !== '-' ? `<span class="tag">Yarn: ${i.yarn}</span>` : ''}
-              ${i.hook && i.hook !== '-' ? `<span class="tag">Hook: ${i.hook}</span>` : ''}
-              ${i.patternLink && i.patternLink.startsWith('http') ? `<a href="${i.patternLink}" target="_blank" class="link-btn">🔗 Open Pattern</a>` : ''}
+          `;
+        }).join('');
+
+        // Ideas List with Assigned Yarn rendering
+        document.getElementById('ideas-list').innerHTML = ideas.map(i => {
+          const assignedSkeins = getAssignedYarnFor(i.name);
+          return `
+            <div class="card">
+              <div class="card-head">
+                <div>
+                  <div class="card-title">💡 ${i.name}</div>
+                  <div class="card-subtitle">${i.where || ''} ${i.paid > 0 ? '• £' + i.paid : ''}</div>
+                </div>
+                <span class="tag ${i.doing === 'Yes' ? 'status-doing' : ''}">${i.doing}</span>
+              </div>
+              <div class="tags">
+                ${i.yarn && i.yarn !== '-' ? `<span class="tag">Need: ${i.yarn}</span>` : ''}
+                ${i.hook && i.hook !== '-' ? `<span class="tag">Hook: ${i.hook}</span>` : ''}
+                ${i.patternLink && i.patternLink.startsWith('http') ? `<a href="${i.patternLink}" target="_blank" class="link-btn">🔗 Open Pattern</a>` : ''}
+              </div>
+              ${i.notes ? `<div class="card-notes"><b>Note:</b> ${i.notes}</div>` : ''}
+
+              <!-- Assigned Yarn Section -->
+              <div class="assigned-yarn-container">
+                <div class="assigned-yarn-title">🧶 Assigned Yarn (${assignedSkeins.length})</div>
+                <div class="assigned-yarn-list">
+                  ${assignedSkeins.length > 0 
+                    ? assignedSkeins.map(s => `
+                        <div class="assigned-yarn-chip">
+                          <b>${s.name}</b> (${s.colour || ''} ${s.weight || ''}${s.isScrap ? ' • scrap' : ''})
+                        </div>
+                      `).join('')
+                    : '<span style="font-size:0.8rem; color:var(--text-muted); font-style:italic;">None assigned yet</span>'
+                  }
+                </div>
+              </div>
+
+              <div class="card-actions">
+                <button class="btn-action" onclick="openEditIdea(${i.rowIndex})">✏️ Edit Idea</button>
+              </div>
             </div>
-            ${i.notes ? `<div class="card-notes"><b>Note:</b> ${i.notes}</div>` : ''}
-            <div class="card-actions">
-              <button class="btn-action" onclick="openEditIdea(${i.rowIndex})">✏️ Edit</button>
-            </div>
-          </div>
-        `).join('');
+          `;
+        }).join('');
 
         // Rough Notes
         document.getElementById('notes-list').innerHTML = roughNotes.map((n, idx) => `
