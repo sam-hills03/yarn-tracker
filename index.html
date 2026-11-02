@@ -692,28 +692,32 @@
     function getAllProjectsList() {
       const set = new Set();
 
-      planner.forEach(p => {
-        const name = (p && p.name ? String(p.name).trim() : '');
-        if (name && name !== 'Project Name' && !name.toLowerCase().startsWith('project planner')) {
-          set.add(name);
+      const sanitize = (val) => {
+        if (!val) return '';
+        const s = String(val).trim();
+        // Ignore headers, booleans, empty strings, and template placeholders
+        if (!s || s === 'TRUE' || s === 'FALSE' || s === 'Project Name' || s.startsWith('--') || s.startsWith('Project planner') || s.startsWith('Other idea')) {
+          return '';
         }
+        return s;
+      };
+
+      planner.forEach(p => {
+        const name = sanitize(p && p.name);
+        if (name) set.add(name);
       });
 
       ideas.forEach(i => {
-        const name = (i && i.name ? String(i.name).trim() : '');
-        if (name && name !== 'Project Name' && !name.toLowerCase().startsWith('other idea')) {
-          set.add(name);
-        }
+        const name = sanitize(i && i.name);
+        if (name) set.add(name);
       });
 
       stash.forEach(s => {
-        const proj = (s && s.project ? String(s.project).trim() : '');
-        if (proj && proj !== 'TRUE' && proj !== 'FALSE') {
-          set.add(proj);
-        }
+        const proj = sanitize(s && s.project);
+        if (proj) set.add(proj);
       });
 
-      return Array.from(set).filter(name => name.length > 0).sort((a, b) => a.localeCompare(b));
+      return Array.from(set).sort((a, b) => a.localeCompare(b));
     }
 
     function setFilter(filter) {
