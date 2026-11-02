@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Crochet Stash</title>
+  <meta name="theme-color" content="#d97768" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #c96459;
+      --primary-light: #fbeee9;
+      --accent: #5b8266;
+      --accent-light: #e8f0eb;
+      --bg: #f8f6f2;
+      --card-bg: #ffffff;
+      --text: #2c2724;
+      --text-muted: #736b63;
+      --border: #eadfce;
+      --radius: 16px;
+      --shadow: 0 4px 16px rgba(44, 39, 36, 0.05);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      padding-bottom: 90px;
+    }
+    header {
+      background: var(--card-bg);
+      padding: 16px 20px 12px;
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      border-bottom: 1px solid var(--border);
+    }
+    .header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    h1 { font-size: 1.35rem; font-weight: 700; color: var(--primary); letter-spacing: -0.5px; }
+    .search-input {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      font-size: 0.95rem;
+      background: #faf8f5;
+      outline: none;
+    }
+    .search-input:focus { border-color: var(--primary); background: #fff; }
+    .filter-chips {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 10px 20px;
+      scrollbar-width: none;
+    }
+    .filter-chips::-webkit-scrollbar { display: none; }
+    .chip {
+      padding: 6px 14px;
+      border-radius: 20px;
+      background: #fff;
+      border: 1px solid var(--border);
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .chip.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+    main { padding: 8px 16px; }
+    .card-list { display: flex; flex-direction: column; gap: 12px; }
+    .yarn-card {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+    }
+    .card-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 8px;
+    }
+    .card-title { font-size: 1.05rem; font-weight: 700; color: var(--text); }
+    .card-subtitle { font-size: 0.85rem; color: var(--text-muted); margin-top: 2px; }
+    .tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0; }
+    .tag {
+      font-size: 0.75rem;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-weight: 600;
+      background: #f0ebe4;
+      color: #63574c;
+    }
+    .tag.scrap { background: #feebe8; color: #b84335; }
+    .tag.project { background: var(--accent-light); color: var(--accent); }
+    .card-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px dashed var(--border);
+      gap: 10px;
+    }
+    select.assign-select {
+      flex: 1;
+      padding: 7px 10px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      font-size: 0.82rem;
+      background: #fbf9f6;
+    }
+    .delete-btn {
+      background: none;
+      border: none;
+      color: #b84335;
+      font-size: 0.8rem;
+      padding: 6px;
+      cursor: pointer;
+    }
+    .tab-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 65px;
+      background: #fff;
+      display: flex;
+      border-top: 1px solid var(--border);
+      z-index: 30;
+    }
+    .tab-btn {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      border: none;
+      background: none;
+      cursor: pointer;
+    }
+    .tab-btn.active { color: var(--primary); }
+    .fab {
+      position: fixed;
+      bottom: 80px;
+      right: 20px;
+      width: 54px;
+      height: 54px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      border: none;
+      box-shadow: 0 6px 20px rgba(201, 100, 89, 0.4);
+      cursor: pointer;
+      z-index: 25;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 100;
+      align-items: flex-end;
+    }
+    .modal.active { display: flex; }
+    .modal-content {
+      background: #fff;
+      width: 100%;
+      max-height: 85vh;
+      border-radius: 24px 24px 0 0;
+      padding: 20px;
+      overflow-y: auto;
+    }
+    .form-group { margin-bottom: 12px; }
+    .form-group label { display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 4px; color: var(--text-muted); }
+    .form-group input, .form-group select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-size: 0.95rem;
+    }
+    .checkbox-row { display: flex; gap: 16px; margin: 12px 0; }
+    .checkbox-item { display: flex; align-items: center; gap: 6px; font-size: 0.85rem; }
+    .submit-btn {
+      width: 100%;
+      padding: 14px;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    .cancel-btn {
+      width: 100%;
+      padding: 10px;
+      background: none;
+      color: var(--text-muted);
+      border: none;
+      font-size: 0.9rem;
+      cursor: pointer;
+      margin-top: 6px;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="header-row">
+      <h1 id="view-title">Yarn Stash</h1>
+      <span id="item-count" style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600;"></span>
+    </div>
+    <input type="text" id="search-bar" class="search-input" placeholder="Search yarn name, colour, shade..." />
+  </header>
+
+  <div class="filter-chips" id="filter-container">
+    <button class="chip active" onclick="setFilter('all')">All</button>
+    <button class="chip" onclick="setFilter('unassigned')">Available</button>
+    <button class="chip" onclick="setFilter('in-project')">In Project</button>
+    <button class="chip" onclick="setFilter('scrap')">Scraps</button>
+    <button class="chip" onclick="setFilter('DK')">DK</button>
+    <button class="chip" onclick="setFilter('Chunky')">Chunky</button>
+    <button class="chip" onclick="setFilter('Aran')">Aran</button>
+  </div>
+
+  <main>
+    <div id="yarn-list" class="card-list"></div>
+    <div id="project-list" class="card-list" style="display:none;"></div>
+  </main>
+
+  <button class="fab" onclick="openAddModal()">+</button>
+
+  <nav class="tab-bar">
+    <button class="tab-btn active" id="tab-yarn" onclick="switchTab('yarn')">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+      Stash
+    </button>
+    <button class="tab-btn" id="tab-projects" onclick="switchTab('projects')">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+      Projects
+    </button>
+  </nav>
+
+  <!-- Add Yarn Modal -->
+  <div class="modal" id="add-modal">
+    <div class="modal-content">
+      <h2 style="font-size: 1.2rem; margin-bottom: 14px;">Add New Yarn</h2>
+      <div class="form-group">
+        <label>Brand / Name</label>
+        <input type="text" id="new-name" placeholder="e.g. Hayfield Spirit" required />
+      </div>
+      <div style="display:flex; gap:10px;">
+        <div class="form-group" style="flex:1;">
+          <label>Weight</label>
+          <select id="new-weight">
+            <option value="DK">DK</option>
+            <option value="Aran">Aran</option>
+            <option value="Chunky">Chunky</option>
+            <option value="Super Chunky">Super Chunky</option>
+            <option value="Fine">Fine</option>
+            <option value="Macrame">Macrame</option>
+          </select>
+        </div>
+        <div class="form-group" style="flex:1;">
+          <label>Hook Size</label>
+          <input type="text" id="new-hook" placeholder="e.g. 4mm" />
+        </div>
+      </div>
+      <div style="display:flex; gap:10px;">
+        <div class="form-group" style="flex:1;">
+          <label>Colour</label>
+          <input type="text" id="new-colour" placeholder="e.g. Blue" />
+        </div>
+        <div class="form-group" style="flex:1;">
+          <label>Shade</label>
+          <input type="text" id="new-shade" placeholder="e.g. 402" />
+        </div>
+      </div>
+      <div class="checkbox-row">
+        <label class="checkbox-item"><input type="checkbox" id="new-is-scrap" /> Scrap</label>
+        <label class="checkbox-item"><input type="checkbox" id="new-has-tag" checked /> Tag Intact</label>
+      </div>
+      <div class="form-group">
+        <label>Assign to Project (Optional)</label>
+        <input type="text" id="new-project" placeholder="e.g. Millipede, Bunny" />
+      </div>
+      <button class="submit-btn" onclick="saveNewYarn()">Save to Stash</button>
+      <button class="cancel-btn" onclick="closeAddModal()">Cancel</button>
+    </div>
+  </div>
+
+  <script>
+    // Initial dataset loaded directly from Ts Yarn sheet
+    const INITIAL_DATA = [
+      { id: "y1", name: "Kitcraft Everyday", weight: "Chunky", colour: "White", shade: "", hook: "6", isScrap: false, hasTag: false, project: "" },
+      { id: "y2", name: "Hayfield Spirit", weight: "Chunky", colour: "Blue", shade: "402", hook: "6", isScrap: true, hasTag: true, project: "" },
+      { id: "y3", name: "Hayfield Spirit", weight: "DK", colour: "Blue", shade: "402", hook: "4", isScrap: false, hasTag: true, project: "" },
+      { id: "y4", name: "Sirdar Stories 50g", weight: "DK", colour: "Blue", shade: "822", hook: "4", isScrap: false, hasTag: false, project: "Floral fillet tapestry" },
+      { id: "y5", name: "Hayfield Spirit", weight: "DK", colour: "Cream", shade: "401", hook: "4", isScrap: false, hasTag: true, project: "" },
+      { id: "y6", name: "T-shirt", weight: "Super Chunky", colour: "Green", shade: "", hook: "9", isScrap: false, hasTag: false, project: "Bedside hanger" },
+      { id: "y7", name: "Hayfield Spirit", weight: "DK", colour: "Multi", shade: "415", hook: "4", isScrap: false, hasTag: true, project: "Shorts" },
+      { id: "y8", name: "Hayfield Spirit", weight: "DK", colour: "Multi", shade: "405", hook: "4", isScrap: true, hasTag: true, project: "" },
+      { id: "y9", name: "Rikorumi", weight: "DK", colour: "Pink", shade: "8", hook: "4", isScrap: false, hasTag: true, project: "Bunny" },
+      { id: "y10", name: "N/A (Teddy)", weight: "Fine", colour: "Pink", shade: "", hook: "3", isScrap: false, hasTag: true, project: "Bunny" },
+      { id: "y11", name: "Kitcraft Kolidascope", weight: "Aran", colour: "Brown", shade: "", hook: "5", isScrap: false, hasTag: true, project: "Granny sweater" },
+      { id: "y12", name: "Hayfield Spirit", weight: "DK", colour: "Red", shade: "", hook: "4", isScrap: false, hasTag: false, project: "Granny square T-shirt" },
+      { id: "y13", name: "Carron Soft & Silky", weight: "DK", colour: "Cream", shade: "", hook: "4", isScrap: false, hasTag: false, project: "Mesh shirt" },
+      { id: "y14", name: "Hayfield Spirit", weight: "Chunky", colour: "Pink", shade: "406 - Salmon", hook: "6", isScrap: false, hasTag: true, project: "Frog" },
+      { id: "y15", name: "Hayfield Bonus", weight: "DK", colour: "Brown", shade: "571 Fawn", hook: "4", isScrap: false, hasTag: true, project: "Wings" },
+      { id: "y16", name: "Hayfield Bonus", weight: "DK", colour: "Green", shade: "Dark", hook: "4", isScrap: false, hasTag: true, project: "Fern wreath" },
+      { id: "y17", name: "N/A (Teddy)", weight: "Fine", colour: "Grey", shade: "", hook: "3", isScrap: false, hasTag: true, project: "Bunny" },
+      { id: "y18", name: "Carron Soft & Silky", weight: "DK", colour: "Black", shade: "", hook: "4", isScrap: false, hasTag: false, project: "Mesh bolero" },
+      { id: "y19", name: "Utopia Crafts", weight: "Super Chunky", colour: "Pink", shade: "", hook: "10", isScrap: false, hasTag: true, project: "Lauri headscarf" },
+      { id: "y20", name: "Hayfield Bonus", weight: "DK", colour: "Purple", shade: "646 - Mauve", hook: "4", isScrap: false, hasTag: true, project: "Millipede" },
+      { id: "y21", name: "Hayfield Bonus", weight: "DK", colour: "Purple", shade: "646 - Mauve", hook: "4", isScrap: false, hasTag: true, project: "Millipede" },
+      { id: "y22", name: "James C Brett Marble", weight: "DK", colour: "Green", shade: "Moss", hook: "4", isScrap: false, hasTag: true, project: "Millipede" },
+      { id: "y23", name: "Hayfield Spirit", weight: "DK", colour: "Red", shade: "", hook: "4", isScrap: true, hasTag: false, project: "Collosseum top" }
+    ];
+
+    let stash = JSON.parse(localStorage.getItem('crochet_stash')) || INITIAL_DATA;
+    let activeTab = 'yarn';
+    let currentFilter = 'all';
+
+    function saveState() {
+      localStorage.setItem('crochet_stash', JSON.stringify(stash));
+      render();
+    }
+
+    function getAllProjects() {
+      const set = new Set();
+      stash.forEach(item => {
+        if (item.project && item.project.trim() !== "") set.add(item.project.trim());
+      });
+      return Array.from(set).sort();
+    }
+
+    function setFilter(filter) {
+      currentFilter = filter;
+      document.querySelectorAll('.filter-chips .chip').forEach(c => c.classList.remove('active'));
+      event.target.classList.add('active');
+      render();
+    }
+
+    function switchTab(tab) {
+      activeTab = tab;
+      document.getElementById('tab-yarn').classList.toggle('active', tab === 'yarn');
+      document.getElementById('tab-projects').classList.toggle('active', tab === 'projects');
+      document.getElementById('filter-container').style.display = tab === 'yarn' ? 'flex' : 'none';
+      document.getElementById('view-title').innerText = tab === 'yarn' ? 'Yarn Stash' : 'Projects';
+      render();
+    }
+
+    function render() {
+      const yarnList = document.getElementById('yarn-list');
+      const projectList = document.getElementById('project-list');
+      const query = document.getElementById('search-bar').value.toLowerCase();
+      const allProjects = getAllProjects();
+
+      if (activeTab === 'yarn') {
+        yarnList.style.display = 'flex';
+        projectList.style.display = 'none';
+
+        const filtered = stash.filter(item => {
+          const matchQuery = (item.name + " " + item.colour + " " + (item.shade || '') + " " + item.weight).toLowerCase().includes(query);
+          if (!matchQuery) return false;
+          if (currentFilter === 'all') return true;
+          if (currentFilter === 'unassigned') return !item.project || item.project === "";
+          if (currentFilter === 'in-project') return item.project && item.project !== "";
+          if (currentFilter === 'scrap') return item.isScrap;
+          return item.weight === currentFilter;
+        });
+
+        document.getElementById('item-count').innerText = `${filtered.length} skeins`;
+
+        yarnList.innerHTML = filtered.map(item => `
+          <div class="yarn-card">
+            <div class="card-head">
+              <div>
+                <div class="card-title">${item.name || 'Unnamed Skein'}</div>
+                <div class="card-subtitle">${item.colour} ${item.shade ? '• Shade ' + item.shade : ''}</div>
+              </div>
+              <span class="tag">${item.weight}</span>
+            </div>
+            <div class="tags">
+              ${item.hook ? `<span class="tag">Hook: ${item.hook}mm</span>` : ''}
+              ${item.isScrap ? `<span class="tag scrap">Scrap</span>` : '<span class="tag">Full Skein</span>'}
+              ${item.hasTag ? `<span class="tag">🏷️ Tagged</span>` : ''}
+              ${item.project ? `<span class="tag project">🧵 ${item.project}</span>` : ''}
+            </div>
+            <div class="card-actions">
+              <select class="assign-select" onchange="assignProject('${item.id}', this.value)">
+                <option value="">-- Assign Project --</option>
+                ${allProjects.map(p => `<option value="${p}" ${item.project === p ? 'selected' : ''}>${p}</option>`).join('')}
+                <option value="__NEW__">+ New Project...</option>
+              </select>
+              <button class="delete-btn" onclick="deleteYarn('${item.id}')">Delete</button>
+            </div>
+          </div>
+        `).join('');
+      } else {
+        yarnList.style.display = 'none';
+        projectList.style.display = 'flex';
+        document.getElementById('item-count').innerText = `${allProjects.length} projects`;
+
+        projectList.innerHTML = allProjects.map(proj => {
+          const assigned = stash.filter(i => i.project === proj);
+          return `
+            <div class="yarn-card">
+              <div class="card-head">
+                <div class="card-title">🧵 ${proj}</div>
+                <span class="tag project">${assigned.length} items</span>
+              </div>
+              <div style="margin: 8px 0; font-size: 0.85rem; color: var(--text-muted);">
+                ${assigned.map(a => `<div>• <b>${a.name}</b> (${a.colour} ${a.weight})</div>`).join('')}
+              </div>
+              <div class="card-actions">
+                <button class="delete-btn" onclick="completeProject('${proj}')">Finish / Unassign All</button>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+    }
+
+    function assignProject(yarnId, value) {
+      if (value === '__NEW__') {
+        const custom = prompt('Enter new project name:');
+        if (custom && custom.trim() !== "") {
+          const target = stash.find(i => i.id === yarnId);
+          if (target) target.project = custom.trim();
+          saveState();
+        }
+      } else {
+        const target = stash.find(i => i.id === yarnId);
+        if (target) {
+          target.project = value;
+          saveState();
+        }
+      }
+    }
+
+    function completeProject(projectName) {
+      if (confirm(`Remove "${projectName}" and free up all its assigned yarn?`)) {
+        stash.forEach(i => {
+          if (i.project === projectName) i.project = "";
+        });
+        saveState();
+      }
+    }
+
+    function deleteYarn(id) {
+      if (confirm("Remove this yarn from stash?")) {
+        stash = stash.filter(i => i.id !== id);
+        saveState();
+      }
+    }
+
+    function openAddModal() { document.getElementById('add-modal').classList.add('active'); }
+    function closeAddModal() { document.getElementById('add-modal').classList.remove('active'); }
+
+    function saveNewYarn() {
+      const name = document.getElementById('new-name').value.trim();
+      if (!name) return alert('Please enter a name or description');
+      
+      const newEntry = {
+        id: 'y_' + Date.now(),
+        name: name,
+        weight: document.getElementById('new-weight').value,
+        colour: document.getElementById('new-colour').value.trim() || 'Assorted',
+        shade: document.getElementById('new-shade').value.trim(),
+        hook: document.getElementById('new-hook').value.trim(),
+        isScrap: document.getElementById('new-is-scrap').checked,
+        hasTag: document.getElementById('new-has-tag').checked,
+        project: document.getElementById('new-project').value.trim()
+      };
+
+      stash.unshift(newEntry);
+      saveState();
+      closeAddModal();
+      document.getElementById('new-name').value = '';
+      document.getElementById('new-colour').value = '';
+      document.getElementById('new-shade').value = '';
+    }
+
+    document.getElementById('search-bar').addEventListener('input', render);
+    render();
+  </script>
+</body>
+</html>
