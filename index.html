@@ -104,7 +104,6 @@
     .card-title { font-size: 1.05rem; font-weight: 700; color: var(--text); }
     .card-subtitle { font-size: 0.85rem; color: var(--text-muted); margin-top: 2px; }
     
-    /* Quantity Stacking Counter */
     .qty-badge {
       display: inline-flex;
       align-items: center;
@@ -156,7 +155,6 @@
       margin-top: 6px;
     }
 
-    /* Assigned Yarn Section */
     .assigned-yarn-container {
       margin-top: 10px;
       padding: 9px 12px;
@@ -275,7 +273,6 @@
       margin-bottom: 8px;
     }
 
-    /* Embedded Row Counter inside Projects */
     .row-counter-box {
       margin-top: 10px;
       padding: 10px 14px;
@@ -288,7 +285,6 @@
     }
     .counter-display { font-size: 1.25rem; font-weight: 800; color: var(--primary); }
 
-    /* Floating Pill Tools (Bottom Screen) */
     .floating-tools-bar {
       position: fixed;
       bottom: 78px;
@@ -332,7 +328,6 @@
       cursor: pointer;
     }
 
-    /* Tab Bar */
     .tab-bar {
       position: fixed;
       bottom: 0;
@@ -359,7 +354,6 @@
     }
     .tab-btn.active { color: var(--primary); }
 
-    /* Modals & Bottom Sheets */
     .modal {
       display: none;
       position: fixed;
@@ -429,7 +423,6 @@
     }
     .picker-item:active { background: var(--primary-light); border-color: var(--primary); }
 
-    /* Stats Grid */
     .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px; }
     .stat-metric-card {
       background: var(--card-bg);
@@ -527,7 +520,7 @@
     </div>
   </main>
 
-  <!-- Floating Tools (Calculator on left, Add on right) -->
+  <!-- Floating Tools -->
   <div class="floating-tools-bar">
     <button class="fab-calc" onclick="openModal('calc-modal')">🧶 Calc</button>
     <button class="fab-add" id="main-fab" onclick="handleFabClick()">+</button>
@@ -628,7 +621,7 @@
     </div>
   </div>
 
-  <!-- Add Yarn Modal (With Yardage and Gram Weights) -->
+  <!-- Add Yarn Modal -->
   <div class="modal" id="add-yarn-modal">
     <div class="modal-content">
       <h2 style="font-size: 1.2rem; margin-bottom: 14px;">Add New Yarn</h2>
@@ -720,11 +713,8 @@
         </div>
       </div>
       <div class="form-group">
-        <label>Status / Doing?</label>
-        <select id="idea-doing">
-          <option value="Not started">Not started</option>
-          <option value="Yes">Yes (In progress)</option>
-        </select>
+        <label>Status / Progress (Text)</label>
+        <input type="text" id="idea-doing" list="status-options" placeholder="e.g. Not started, Yes, In progress" />
       </div>
       <div class="form-group">
         <label>Notes / Thoughts</label>
@@ -735,7 +725,7 @@
     </div>
   </div>
 
-  <!-- Edit Planner Modal (With Pattern URL Input) -->
+  <!-- Edit Planner Modal (Status is now a free text box with suggestions) -->
   <div class="modal" id="edit-planner-modal">
     <div class="modal-content">
       <h2 style="font-size: 1.2rem; margin-bottom: 14px;">Edit Project</h2>
@@ -750,13 +740,8 @@
       </div>
       <div style="display:flex; gap:10px;">
         <div class="form-group" style="flex:1;">
-          <label>Status</label>
-          <select id="edit-p-status">
-            <option value="Ready to go">Ready to go</option>
-            <option value="In progress">In progress</option>
-            <option value="Need fabric">Need fabric</option>
-            <option value="Complete">Complete</option>
-          </select>
+          <label>Status / Progress (Text)</label>
+          <input type="text" id="edit-p-status" list="status-options" placeholder="e.g. Ready to go, In progress, Complete" />
         </div>
         <div class="form-group" style="flex:1;">
           <label>Hook</label>
@@ -811,12 +796,8 @@
         </div>
       </div>
       <div class="form-group">
-        <label>Doing?</label>
-        <select id="edit-i-doing">
-          <option value="Not started">Not started</option>
-          <option value="Yes">Yes (In progress)</option>
-          <option value="-">-</option>
-        </select>
+        <label>Status / Progress (Text)</label>
+        <input type="text" id="edit-i-doing" list="status-options" placeholder="e.g. Not started, Yes, Complete" />
       </div>
       <div class="form-group">
         <label>Notes</label>
@@ -827,6 +808,16 @@
       <button class="cancel-btn" onclick="closeModal('edit-idea-modal')">Cancel</button>
     </div>
   </div>
+
+  <!-- Reusable Status Autocomplete Datalist -->
+  <datalist id="status-options">
+    <option value="Ready to go"></option>
+    <option value="In progress"></option>
+    <option value="Not started"></option>
+    <option value="Need fabric"></option>
+    <option value="Need yarn"></option>
+    <option value="Complete"></option>
+  </datalist>
 
   <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbyL4si7OB71uYZJnrrtJb79gaitfdGcpkRwtM_T8S_kAhZBHFf3mhpLnMg4KB7b2oqZyw/exec";
@@ -845,7 +836,7 @@
     let ideas = JSON.parse(localStorage.getItem('ideas_data')) || [];
     let roughNotes = JSON.parse(localStorage.getItem('notes_data')) || [];
     let projectRowCounters = JSON.parse(localStorage.getItem('row_counters_data')) || {};
-    let projectPdfs = JSON.parse(localStorage.getItem('project_pdfs_data')) || {};
+    let projectPdfs = JSON.parse(localStorage.getItem('project_pdfs_meta')) || {};
 
     let activeTab = 'yarn';
     let currentFilter = 'all';
@@ -898,7 +889,6 @@
       }
     }
 
-    // Fiber Density Table (Calibrated to 240m for DK Acrylic Nm 2.4)
     const FIBER_DENSITY_TABLE = {
       'fine': { 'acrylic': 380, 'wool': 400, 'cotton': 340 },
       'dk': { 'acrylic': 240, 'wool': 250, 'cotton': 210 },
@@ -979,18 +969,34 @@
       }
     }
 
-    // Direct Ravelry Search Launcher
-    function searchRavelryForYarn(name, weight, colour) {
-      const queryParts = [name !== 'N/A' ? name : '', weight, colour].filter(Boolean);
-      const url = `https://www.ravelry.com/patterns/search#weight=${encodeURIComponent(weight.toLowerCase())}&query=${encodeURIComponent(queryParts.join(' '))}`;
+    // Fixed Ravelry Search: Queries exclusively by weight and available yardage
+    function searchRavelryByWeightAndYardage(weight, meters) {
+      const weightMap = {
+        'fine': 'fingering',
+        'dk': 'dk',
+        'aran': 'aran',
+        'chunky': 'bulky',
+        'super chunky': 'super-bulky'
+      };
+      const cleanWeight = (weight || 'dk').trim().toLowerCase();
+      const ravelryWeight = weightMap[cleanWeight] || cleanWeight;
+
+      let url = `https://www.ravelry.com/patterns/search#craft=crochet&weight=${encodeURIComponent(ravelryWeight)}`;
+
+      const m = parseInt(meters);
+      if (m && m > 0) {
+        const minMeters = Math.max(0, Math.floor(m * 0.85));
+        const maxMeters = Math.ceil(m * 1.15);
+        url += `&meterage=${minMeters}%7C${maxMeters}`;
+      }
+
       window.open(url, '_blank');
     }
 
-    // Row Counter Management
+    // Row Counter
     function adjustProjectRow(projectName, delta) {
       const current = projectRowCounters[projectName] || 0;
-      const next = Math.max(0, current + delta);
-      projectRowCounters[projectName] = next;
+      projectRowCounters[projectName] = Math.max(0, current + delta);
       localStorage.setItem('row_counters_data', JSON.stringify(projectRowCounters));
       render();
     }
@@ -1003,7 +1009,9 @@
       }
     }
 
-    // PDF / Pattern File Attachment
+    // Pattern / PDF Attachment (With safe metadata storage and in-memory object URL)
+    const inMemoryPdfBlobs = {};
+
     function attachPdfToProject(projectName) {
       const input = document.createElement('input');
       input.type = 'file';
@@ -1011,27 +1019,30 @@
       input.onchange = (e) => {
         const file = e.target.files[0];
         if (!file) return;
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          projectPdfs[projectName] = { name: file.name, data: event.target.result };
-          if (projectRowCounters[projectName] === undefined) projectRowCounters[projectName] = 0;
-          localStorage.setItem('project_pdfs_data', JSON.stringify(projectPdfs));
-          localStorage.setItem('row_counters_data', JSON.stringify(projectRowCounters));
-          render();
-        };
-        reader.readAsDataURL(file);
+
+        // Store active blob URL in memory for immediate viewing
+        inMemoryPdfBlobs[projectName] = URL.createObjectURL(file);
+        
+        // Store filename metadata in localStorage
+        projectPdfs[projectName] = { name: file.name, date: new Date().toLocaleDateString() };
+        if (projectRowCounters[projectName] === undefined) projectRowCounters[projectName] = 0;
+
+        localStorage.setItem('project_pdfs_meta', JSON.stringify(projectPdfs));
+        localStorage.setItem('row_counters_data', JSON.stringify(projectRowCounters));
+        render();
       };
       input.click();
     }
 
     function openProjectPdf(projectName) {
-      const pdf = projectPdfs[projectName];
-      if (!pdf) return;
-      const win = window.open();
-      win.document.write(`<iframe src="${pdf.data}" frameborder="0" style="border:0; top:0; left:0; bottom:0; right:0; width:100%; height:100%;" allowfullscreen></iframe>`);
+      const blobUrl = inMemoryPdfBlobs[projectName];
+      if (blobUrl) {
+        window.open(blobUrl, '_blank');
+      } else {
+        alert(`Pattern file "${projectPdfs[projectName]?.name || 'attached'}" is active for this session. Re-select the file anytime to view the full PDF reader.`);
+      }
     }
 
-    // Stack identical yarns together
     function getStackedStash(rawList) {
       const map = new Map();
       rawList.forEach(item => {
@@ -1083,7 +1094,6 @@
       }
     }
 
-    // Open Bottom Sheet Picker
     function openAssignPicker(rowIndex) {
       skeinBeingAssigned = rowIndex;
       const item = stash.find(s => s.rowIndex === rowIndex);
@@ -1107,7 +1117,7 @@
 
     function selectProjectFromPicker(projectName) {
       if (!skeinBeingAssigned) return;
-      const item = stash.find(s => s.rowIndex === skeinBeingAssigned);
+      const item = stash.find(s => s.rowIndex === rowIndexHelper(skeinBeingAssigned));
       if (item) {
         item.project = projectName;
         localStorage.setItem('stash_data', JSON.stringify(stash));
@@ -1117,9 +1127,13 @@
       postAction({ action: 'UPDATE_PROJECT', rowIndex: skeinBeingAssigned, project: projectName });
     }
 
+    function rowIndexHelper(idx) {
+      return Number(idx);
+    }
+
     function unassignCurrentSkein() {
       if (!skeinBeingAssigned) return;
-      const item = stash.find(s => s.rowIndex === skeinBeingAssigned);
+      const item = stash.find(s => s.rowIndex === rowIndexHelper(skeinBeingAssigned));
       if (item) {
         item.project = "";
         localStorage.setItem('stash_data', JSON.stringify(stash));
@@ -1234,7 +1248,7 @@
                 ${p.hook ? ' • Hook ' + p.hook : ''}
               </div>
             </div>
-            <span class="tag ${p.status === 'Complete' ? 'status-complete' : 'status-ready'}">${p.status}</span>
+            <span class="tag ${p.status && p.status.toLowerCase() === 'complete' ? 'status-complete' : 'status-ready'}">${p.status || 'Active'}</span>
           </div>
           <div class="tags">
             ${p.yarn ? `<span class="tag">Spec: ${p.yarn}</span>` : ''}
@@ -1260,9 +1274,11 @@
           ${(attachedPdf || rowCount !== null) ? `
             <div class="row-counter-box">
               <div>
-                <div style="font-size:0.75rem; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Row Counter</div>
+                <div style="font-size:0.75rem; font-weight:700; color:var(--text-muted); text-transform:uppercase;">
+                  ${attachedPdf ? '📄 ' + attachedPdf.name : 'Row Counter'}
+                </div>
                 <div class="counter-display">Row ${rowCount || 0}</div>
-                ${attachedPdf ? `<button class="btn-action" style="padding:2px 8px; font-size:0.75rem; margin-top:4px;" onclick="openProjectPdf('${p.name}')">📄 View PDF</button>` : ''}
+                ${attachedPdf ? `<button class="btn-action" style="padding:2px 8px; font-size:0.75rem; margin-top:4px;" onclick="openProjectPdf('${p.name}')">View File</button>` : ''}
               </div>
               <div style="display:flex; align-items:center; gap:8px;">
                 <button class="qty-btn" onclick="adjustProjectRow('${p.name}', -1)">–</button>
@@ -1274,7 +1290,7 @@
 
           <div class="card-actions">
             <button class="btn-action" onclick="openEditPlanner(${p.rowIndex})">✏️ Edit Project</button>
-            <button class="btn-action" onclick="attachPdfToProject('${p.name}')">📄 ${attachedPdf ? 'Replace Pattern/PDF' : 'Attach Pattern/PDF'}</button>
+            <button class="btn-action" onclick="attachPdfToProject('${p.name}')">📄 ${attachedPdf ? 'Change PDF' : 'Attach PDF'}</button>
           </div>
         </div>
       `;
@@ -1299,7 +1315,6 @@
           return item.weight === currentFilter;
         });
 
-        // Stack identical yarns together
         const stacked = getStackedStash(filtered);
 
         document.getElementById('yarn-list').innerHTML = stacked.map(item => `
@@ -1331,7 +1346,7 @@
                 <span>${item.project ? '🧵 ' + item.project : '-- Assign Project --'}</span>
                 <span style="color:var(--text-muted); font-size:0.75rem;">▼</span>
               </button>
-              <button class="btn-action" onclick="searchRavelryForYarn('${item.name}', '${item.weight}', '${item.colour}')">
+              <button class="btn-action" onclick="searchRavelryByWeightAndYardage('${item.weight}', '${item.meters || ''}')">
                 🔍 Ravelry
               </button>
               <button class="delete-btn" onclick="deleteYarn(${item.rowIndex})">Delete</button>
@@ -1356,6 +1371,9 @@
         document.getElementById('ideas-list').innerHTML = ideas.map(i => {
           const assignedSkeins = getAssignedYarnFor(i.name);
           const hasLink = i.patternLink && i.patternLink.startsWith('http');
+          const attachedPdf = projectPdfs[i.name];
+          const rowCount = projectRowCounters[i.name] !== undefined ? projectRowCounters[i.name] : null;
+
           return `
             <div class="card">
               <div class="card-head">
@@ -1363,7 +1381,7 @@
                   <div class="card-title">💡 ${i.name}</div>
                   <div class="card-subtitle">${i.where || ''} ${i.paid > 0 ? '• £' + i.paid : ''}</div>
                 </div>
-                <span class="tag ${i.doing === 'Yes' ? 'status-doing' : ''}">${i.doing}</span>
+                <span class="tag ${i.doing === 'Yes' ? 'status-doing' : ''}">${i.doing || 'Idea'}</span>
               </div>
               <div class="tags">
                 ${i.yarn && i.yarn !== '-' ? `<span class="tag">Need: ${i.yarn}</span>` : ''}
@@ -1386,8 +1404,26 @@
                 </div>
               </div>
 
+              ${(attachedPdf || rowCount !== null) ? `
+                <div class="row-counter-box">
+                  <div>
+                    <div style="font-size:0.75rem; font-weight:700; color:var(--text-muted); text-transform:uppercase;">
+                      ${attachedPdf ? '📄 ' + attachedPdf.name : 'Row Counter'}
+                    </div>
+                    <div class="counter-display">Row ${rowCount || 0}</div>
+                    ${attachedPdf ? `<button class="btn-action" style="padding:2px 8px; font-size:0.75rem; margin-top:4px;" onclick="openProjectPdf('${i.name}')">View File</button>` : ''}
+                  </div>
+                  <div style="display:flex; align-items:center; gap:8px;">
+                    <button class="qty-btn" onclick="adjustProjectRow('${i.name}', -1)">–</button>
+                    <button class="qty-btn" style="background:var(--primary); color:#fff; border-color:var(--primary); width:32px; height:32px;" onclick="adjustProjectRow('${i.name}', 1)">+</button>
+                    <button class="delete-btn" style="font-size:0.75rem;" onclick="resetProjectRow('${i.name}')">Reset</button>
+                  </div>
+                </div>
+              ` : ''}
+
               <div class="card-actions">
                 <button class="btn-action" onclick="openEditIdea(${i.rowIndex})">✏️ Edit Idea</button>
+                <button class="btn-action" onclick="attachPdfToProject('${i.name}')">📄 ${attachedPdf ? 'Change PDF' : 'Attach PDF'}</button>
               </div>
             </div>
           `;
@@ -1421,7 +1457,7 @@
       const item = {
         name: document.getElementById('edit-p-name').value.trim(),
         pattern: document.getElementById('edit-p-pattern').value.trim(),
-        status: document.getElementById('edit-p-status').value,
+        status: document.getElementById('edit-p-status').value.trim() || 'Ready to go',
         yarn: document.getElementById('edit-p-yarn').value.trim(),
         hook: document.getElementById('edit-p-hook').value.trim(),
         notes: document.getElementById('edit-p-notes').value.trim()
@@ -1467,7 +1503,7 @@
         paid: document.getElementById('edit-i-paid').value.trim(),
         yarn: document.getElementById('edit-i-yarn').value.trim(),
         hook: document.getElementById('edit-i-hook').value.trim(),
-        doing: document.getElementById('edit-i-doing').value,
+        doing: document.getElementById('edit-i-doing').value.trim() || 'Not started',
         notes: document.getElementById('edit-i-notes').value.trim()
       };
       const target = ideas.find(i => i.rowIndex === rowIndex);
@@ -1524,7 +1560,7 @@
         paid: document.getElementById('idea-paid').value.trim(),
         yarn: document.getElementById('idea-yarn').value.trim(),
         hook: document.getElementById('idea-hook').value.trim(),
-        doing: document.getElementById('idea-doing').value,
+        doing: document.getElementById('idea-doing').value.trim() || 'Not started',
         notes: document.getElementById('idea-notes').value.trim()
       };
       ideas.unshift(idea);
