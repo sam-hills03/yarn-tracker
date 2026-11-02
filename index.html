@@ -30,7 +30,7 @@
     }
     header {
       background: var(--card-bg);
-      padding: 16px 20px 12px;
+      padding: 14px 18px 10px;
       position: sticky;
       top: 0;
       z-index: 20;
@@ -40,9 +40,23 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 12px;
+      margin-bottom: 10px;
     }
     h1 { font-size: 1.35rem; font-weight: 700; color: var(--primary); letter-spacing: -0.5px; }
+    .sync-status {
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 12px;
+      background: #eee;
+      color: #666;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      cursor: pointer;
+    }
+    .sync-status.synced { background: var(--accent-light); color: var(--accent); }
+    .sync-status.syncing { background: #fff3cd; color: #856404; }
     .search-input {
       width: 100%;
       padding: 10px 14px;
@@ -57,7 +71,7 @@
       display: flex;
       gap: 8px;
       overflow-x: auto;
-      padding: 10px 20px;
+      padding: 10px 18px;
       scrollbar-width: none;
     }
     .filter-chips::-webkit-scrollbar { display: none; }
@@ -90,7 +104,7 @@
     }
     .card-title { font-size: 1.05rem; font-weight: 700; color: var(--text); }
     .card-subtitle { font-size: 0.85rem; color: var(--text-muted); margin-top: 2px; }
-    .tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0; }
+    .tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
     .tag {
       font-size: 0.75rem;
       padding: 3px 8px;
@@ -226,7 +240,7 @@
   <header>
     <div class="header-row">
       <h1 id="view-title">Yarn Stash</h1>
-      <span id="item-count" style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600;"></span>
+      <span id="sync-indicator" class="sync-status" onclick="fetchFromSheet()">🔄 Syncing...</span>
     </div>
     <input type="text" id="search-bar" class="search-input" placeholder="Search yarn name, colour, shade..." />
   </header>
@@ -281,7 +295,7 @@
         </div>
         <div class="form-group" style="flex:1;">
           <label>Hook Size</label>
-          <input type="text" id="new-hook" placeholder="e.g. 4mm" />
+          <input type="text" id="new-hook" placeholder="e.g. 4" />
         </div>
       </div>
       <div style="display:flex; gap:10px;">
@@ -302,46 +316,54 @@
         <label>Assign to Project (Optional)</label>
         <input type="text" id="new-project" placeholder="e.g. Millipede, Bunny" />
       </div>
-      <button class="submit-btn" onclick="saveNewYarn()">Save to Stash</button>
+      <button class="submit-btn" id="modal-submit-btn" onclick="saveNewYarn()">Save to Stash</button>
       <button class="cancel-btn" onclick="closeAddModal()">Cancel</button>
     </div>
   </div>
 
   <script>
-    // Initial dataset loaded directly from Ts Yarn sheet
-    const INITIAL_DATA = [
-      { id: "y1", name: "Kitcraft Everyday", weight: "Chunky", colour: "White", shade: "", hook: "6", isScrap: false, hasTag: false, project: "" },
-      { id: "y2", name: "Hayfield Spirit", weight: "Chunky", colour: "Blue", shade: "402", hook: "6", isScrap: true, hasTag: true, project: "" },
-      { id: "y3", name: "Hayfield Spirit", weight: "DK", colour: "Blue", shade: "402", hook: "4", isScrap: false, hasTag: true, project: "" },
-      { id: "y4", name: "Sirdar Stories 50g", weight: "DK", colour: "Blue", shade: "822", hook: "4", isScrap: false, hasTag: false, project: "Floral fillet tapestry" },
-      { id: "y5", name: "Hayfield Spirit", weight: "DK", colour: "Cream", shade: "401", hook: "4", isScrap: false, hasTag: true, project: "" },
-      { id: "y6", name: "T-shirt", weight: "Super Chunky", colour: "Green", shade: "", hook: "9", isScrap: false, hasTag: false, project: "Bedside hanger" },
-      { id: "y7", name: "Hayfield Spirit", weight: "DK", colour: "Multi", shade: "415", hook: "4", isScrap: false, hasTag: true, project: "Shorts" },
-      { id: "y8", name: "Hayfield Spirit", weight: "DK", colour: "Multi", shade: "405", hook: "4", isScrap: true, hasTag: true, project: "" },
-      { id: "y9", name: "Rikorumi", weight: "DK", colour: "Pink", shade: "8", hook: "4", isScrap: false, hasTag: true, project: "Bunny" },
-      { id: "y10", name: "N/A (Teddy)", weight: "Fine", colour: "Pink", shade: "", hook: "3", isScrap: false, hasTag: true, project: "Bunny" },
-      { id: "y11", name: "Kitcraft Kolidascope", weight: "Aran", colour: "Brown", shade: "", hook: "5", isScrap: false, hasTag: true, project: "Granny sweater" },
-      { id: "y12", name: "Hayfield Spirit", weight: "DK", colour: "Red", shade: "", hook: "4", isScrap: false, hasTag: false, project: "Granny square T-shirt" },
-      { id: "y13", name: "Carron Soft & Silky", weight: "DK", colour: "Cream", shade: "", hook: "4", isScrap: false, hasTag: false, project: "Mesh shirt" },
-      { id: "y14", name: "Hayfield Spirit", weight: "Chunky", colour: "Pink", shade: "406 - Salmon", hook: "6", isScrap: false, hasTag: true, project: "Frog" },
-      { id: "y15", name: "Hayfield Bonus", weight: "DK", colour: "Brown", shade: "571 Fawn", hook: "4", isScrap: false, hasTag: true, project: "Wings" },
-      { id: "y16", name: "Hayfield Bonus", weight: "DK", colour: "Green", shade: "Dark", hook: "4", isScrap: false, hasTag: true, project: "Fern wreath" },
-      { id: "y17", name: "N/A (Teddy)", weight: "Fine", colour: "Grey", shade: "", hook: "3", isScrap: false, hasTag: true, project: "Bunny" },
-      { id: "y18", name: "Carron Soft & Silky", weight: "DK", colour: "Black", shade: "", hook: "4", isScrap: false, hasTag: false, project: "Mesh bolero" },
-      { id: "y19", name: "Utopia Crafts", weight: "Super Chunky", colour: "Pink", shade: "", hook: "10", isScrap: false, hasTag: true, project: "Lauri headscarf" },
-      { id: "y20", name: "Hayfield Bonus", weight: "DK", colour: "Purple", shade: "646 - Mauve", hook: "4", isScrap: false, hasTag: true, project: "Millipede" },
-      { id: "y21", name: "Hayfield Bonus", weight: "DK", colour: "Purple", shade: "646 - Mauve", hook: "4", isScrap: false, hasTag: true, project: "Millipede" },
-      { id: "y22", name: "James C Brett Marble", weight: "DK", colour: "Green", shade: "Moss", hook: "4", isScrap: false, hasTag: true, project: "Millipede" },
-      { id: "y23", name: "Hayfield Spirit", weight: "DK", colour: "Red", shade: "", hook: "4", isScrap: true, hasTag: false, project: "Collosseum top" }
-    ];
+    const API_URL = "https://script.google.com/macros/s/AKfycbyL4si7OB71uYZJnrrtJb79gaitfdGcpkRwtM_T8S_kAhZBHFf3mhpLnMg4KB7b2oqZyw/exec";
 
-    let stash = JSON.parse(localStorage.getItem('crochet_stash')) || INITIAL_DATA;
+    let stash = JSON.parse(localStorage.getItem('crochet_stash')) || [];
     let activeTab = 'yarn';
     let currentFilter = 'all';
 
-    function saveState() {
-      localStorage.setItem('crochet_stash', JSON.stringify(stash));
-      render();
+    function setSyncStatus(state, text) {
+      const el = document.getElementById('sync-indicator');
+      el.className = 'sync-status ' + state;
+      el.innerText = text;
+    }
+
+    async function fetchFromSheet() {
+      setSyncStatus('syncing', 'Syncing...');
+      try {
+        const res = await fetch(API_URL);
+        const data = await res.json();
+        stash = data;
+        localStorage.setItem('crochet_stash', JSON.stringify(stash));
+        setSyncStatus('synced', '✓ Synced');
+        render();
+      } catch (err) {
+        console.error("Fetch failed", err);
+        setSyncStatus('', 'Offline (Cached)');
+        render();
+      }
+    }
+
+    async function postAction(payload) {
+      setSyncStatus('syncing', 'Saving...');
+      try {
+        await fetch(API_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        setTimeout(fetchFromSheet, 1200); // Re-fetch to get updated row indexes
+      } catch (err) {
+        console.error("Save error", err);
+        setSyncStatus('', 'Save failed');
+      }
     }
 
     function getAllProjects() {
@@ -388,8 +410,6 @@
           return item.weight === currentFilter;
         });
 
-        document.getElementById('item-count').innerText = `${filtered.length} skeins`;
-
         yarnList.innerHTML = filtered.map(item => `
           <div class="yarn-card">
             <div class="card-head">
@@ -402,23 +422,22 @@
             <div class="tags">
               ${item.hook ? `<span class="tag">Hook: ${item.hook}mm</span>` : ''}
               ${item.isScrap ? `<span class="tag scrap">Scrap</span>` : '<span class="tag">Full Skein</span>'}
-              ${item.hasTag ? `<span class="tag">🏷️ Tagged</span>` : ''}
+              ${item.hasTag ? `<span class="tag">🏷️ Tag</span>` : ''}
               ${item.project ? `<span class="tag project">🧵 ${item.project}</span>` : ''}
             </div>
             <div class="card-actions">
-              <select class="assign-select" onchange="assignProject('${item.id}', this.value)">
+              <select class="assign-select" onchange="assignProject(${item.rowIndex}, this.value)">
                 <option value="">-- Assign Project --</option>
                 ${allProjects.map(p => `<option value="${p}" ${item.project === p ? 'selected' : ''}>${p}</option>`).join('')}
                 <option value="__NEW__">+ New Project...</option>
               </select>
-              <button class="delete-btn" onclick="deleteYarn('${item.id}')">Delete</button>
+              <button class="delete-btn" onclick="deleteYarn(${item.rowIndex})">Delete</button>
             </div>
           </div>
         `).join('');
       } else {
         yarnList.style.display = 'none';
         projectList.style.display = 'flex';
-        document.getElementById('item-count').innerText = `${allProjects.length} projects`;
 
         projectList.innerHTML = allProjects.map(proj => {
           const assigned = stash.filter(i => i.project === proj);
@@ -426,13 +445,13 @@
             <div class="yarn-card">
               <div class="card-head">
                 <div class="card-title">🧵 ${proj}</div>
-                <span class="tag project">${assigned.length} items</span>
+                <span class="tag project">${assigned.length} skeins</span>
               </div>
               <div style="margin: 8px 0; font-size: 0.85rem; color: var(--text-muted);">
                 ${assigned.map(a => `<div>• <b>${a.name}</b> (${a.colour} ${a.weight})</div>`).join('')}
               </div>
               <div class="card-actions">
-                <button class="delete-btn" onclick="completeProject('${proj}')">Finish / Unassign All</button>
+                <button class="delete-btn" onclick="unassignAllFromProject('${proj}')">Finish / Unassign All</button>
               </div>
             </div>
           `;
@@ -440,37 +459,49 @@
       }
     }
 
-    function assignProject(yarnId, value) {
+    function assignProject(rowIndex, value) {
+      let finalProject = value;
       if (value === '__NEW__') {
         const custom = prompt('Enter new project name:');
-        if (custom && custom.trim() !== "") {
-          const target = stash.find(i => i.id === yarnId);
-          if (target) target.project = custom.trim();
-          saveState();
-        }
-      } else {
-        const target = stash.find(i => i.id === yarnId);
-        if (target) {
-          target.project = value;
-          saveState();
-        }
+        if (!custom || custom.trim() === '') return render();
+        finalProject = custom.trim();
       }
+
+      // Optimistic local update
+      const target = stash.find(i => i.rowIndex === rowIndex);
+      if (target) target.project = finalProject;
+      render();
+
+      postAction({
+        action: 'UPDATE_PROJECT',
+        rowIndex: rowIndex,
+        project: finalProject
+      });
     }
 
-    function completeProject(projectName) {
-      if (confirm(`Remove "${projectName}" and free up all its assigned yarn?`)) {
-        stash.forEach(i => {
-          if (i.project === projectName) i.project = "";
+    function unassignAllFromProject(projectName) {
+      if (!confirm(`Free up all yarn from "${projectName}"?`)) return;
+      const matching = stash.filter(i => i.project === projectName);
+      matching.forEach(i => {
+        i.project = "";
+        postAction({
+          action: 'UPDATE_PROJECT',
+          rowIndex: i.rowIndex,
+          project: ""
         });
-        saveState();
-      }
+      });
+      render();
     }
 
-    function deleteYarn(id) {
-      if (confirm("Remove this yarn from stash?")) {
-        stash = stash.filter(i => i.id !== id);
-        saveState();
-      }
+    function deleteYarn(rowIndex) {
+      if (!confirm("Remove this yarn from the sheet?")) return;
+      stash = stash.filter(i => i.rowIndex !== rowIndex);
+      render();
+
+      postAction({
+        action: 'DELETE',
+        rowIndex: rowIndex
+      });
     }
 
     function openAddModal() { document.getElementById('add-modal').classList.add('active'); }
@@ -478,10 +509,9 @@
 
     function saveNewYarn() {
       const name = document.getElementById('new-name').value.trim();
-      if (!name) return alert('Please enter a name or description');
-      
-      const newEntry = {
-        id: 'y_' + Date.now(),
+      if (!name) return alert('Please enter a name or brand');
+
+      const yarn = {
         name: name,
         weight: document.getElementById('new-weight').value,
         colour: document.getElementById('new-colour').value.trim() || 'Assorted',
@@ -492,16 +522,24 @@
         project: document.getElementById('new-project').value.trim()
       };
 
-      stash.unshift(newEntry);
-      saveState();
+      stash.push({ ...yarn, rowIndex: stash.length + 2 });
+      render();
       closeAddModal();
+
+      postAction({
+        action: 'ADD',
+        yarn: yarn
+      });
+
       document.getElementById('new-name').value = '';
       document.getElementById('new-colour').value = '';
       document.getElementById('new-shade').value = '';
     }
 
     document.getElementById('search-bar').addEventListener('input', render);
-    render();
+
+    // Initial load
+    fetchFromSheet();
   </script>
 </body>
 </html>
