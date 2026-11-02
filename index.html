@@ -134,33 +134,39 @@
       border-top: 1px dashed var(--border);
       gap: 10px;
     }
-    /* Fixed select styling: forces readable dark text and background */
-    select.assign-select {
-      flex: 1;
-      padding: 9px 10px;
-      border-radius: 8px;
-      border: 1px solid var(--border);
-      font-size: 0.85rem;
-      font-family: inherit;
-      background-color: #ffffff !important;
-      color: #2c2724 !important;
-      appearance: auto;
-      -webkit-appearance: auto;
-    }
-    select.assign-select option {
-      background-color: #ffffff !important;
-      color: #2c2724 !important;
-      padding: 6px 10px;
-    }
     .btn-action {
-      background: none;
+      background: #fff;
       border: 1px solid var(--border);
       color: var(--text);
-      font-size: 0.8rem;
+      font-size: 0.85rem;
       font-weight: 600;
-      padding: 5px 12px;
-      border-radius: 8px;
+      padding: 8px 14px;
+      border-radius: 10px;
       cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn-assign {
+      flex: 1;
+      background: #faf8f5;
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-size: 0.82rem;
+      font-weight: 600;
+      padding: 8px 12px;
+      border-radius: 8px;
+      text-align: left;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      white-space: nowrap;
+      overflow: hidden;
+    }
+    .btn-assign span {
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     .delete-btn {
       background: none;
@@ -328,6 +334,26 @@
       cursor: pointer;
       margin-top: 6px;
     }
+
+    /* Bottom Sheet Picker Items */
+    .picker-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 16px;
+      margin-bottom: 8px;
+      background: #faf8f5;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text);
+      cursor: pointer;
+    }
+    .picker-item:active {
+      background: var(--primary-light);
+      border-color: var(--primary);
+    }
   </style>
 </head>
 <body>
@@ -411,6 +437,20 @@
       Stats
     </button>
   </nav>
+
+  <!-- Project Assignment Bottom Sheet Picker -->
+  <div class="modal" id="assign-picker-modal">
+    <div class="modal-content">
+      <h2 style="font-size: 1.2rem; margin-bottom: 4px;">Assign to Project</h2>
+      <p id="assign-picker-subtitle" style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 14px;">Choose a project for this skein:</p>
+      
+      <div id="picker-items-container" style="max-height: 50vh; overflow-y: auto; margin-bottom: 10px;"></div>
+      
+      <button class="btn-action" style="width:100%; justify-content:center; padding:12px; margin-bottom:8px;" onclick="createNewProjectFromPicker()">+ Create New Project...</button>
+      <button class="delete-btn" style="width:100%; text-align:center; padding:10px;" onclick="unassignCurrentSkein()">Remove from Project (Unassign)</button>
+      <button class="cancel-btn" onclick="closeModal('assign-picker-modal')">Close</button>
+    </div>
+  </div>
 
   <!-- Add Yarn Modal -->
   <div class="modal" id="add-yarn-modal">
@@ -607,40 +647,45 @@
   <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbyL4si7OB71uYZJnrrtJb79gaitfdGcpkRwtM_T8S_kAhZBHFf3mhpLnMg4KB7b2oqZyw/exec";
 
-    // Guaranteed baseline list of all projects and ideas
-    const DEFAULT_PLANNER = [
-      { rowIndex: 3, name: "Hexagon Cardigan", pattern: "Bought", yarn: "Hayfield Spirit DK - Bliss", hook: "4", status: "Complete", notes: "For Me" },
-      { rowIndex: 4, name: "Teardrops Clothes Basket", pattern: "NO", yarn: "N/A T-shirt yarn - Green", hook: "8", status: "Complete", notes: "For Home" },
-      { rowIndex: 5, name: "Leaf Bandana", pattern: "Bought", yarn: "Hayfield Spirit DK - Casper", hook: "4", status: "Complete", notes: "For Lily" },
-      { rowIndex: 6, name: "Butterfly Cardigan", pattern: "Bought", yarn: "Hayfield Bonus DK - Fawn", hook: "4", status: "Ready to go", notes: "For Sam" },
-      { rowIndex: 7, name: "White and Blue Scarf", pattern: "Freehand", yarn: "Hayfield Spirit Chunky - Blue", hook: "6 (Tunisian)", status: "Need fabric", notes: "?" }
-    ];
-
-    const DEFAULT_IDEAS = [
-      { rowIndex: 11, name: "Bifurca Pullover", patternLink: "https://ravelry.com", where: "Ravelry", paid: 8, yarn: "-", hook: "-", doing: "-", notes: "Looks hard" },
-      { rowIndex: 12, name: "Crochet Cable Cardi", patternLink: "https://joslincrochet.com", where: "Online", paid: 5, yarn: "DK Cotton & Mohair", hook: "5", doing: "Not started", notes: "Not got the yarn" },
-      { rowIndex: 13, name: "Willow Sweater", patternLink: "https://etsy.com", where: "Etsy", paid: 11, yarn: "3x Acrylic Mohair", hook: "6 & 4.5", doing: "Not started", notes: "Lowkey expensive" },
-      { rowIndex: 14, name: "Tattoo Banner", patternLink: "", where: "Freehand", paid: 0, yarn: "-", hook: "-", doing: "Not started", notes: "Need to design" },
-      { rowIndex: 15, name: "Granny Sweater", patternLink: "https://tiktok.com", where: "TikTok", paid: 0, yarn: "Any DK/Aran", hook: "5", doing: "Yes", notes: "Need to decide" },
-      { rowIndex: 16, name: "Bedside Holder", patternLink: "https://pin.it", where: "Pinterest", paid: 0, yarn: "Green T-shirt yarn", hook: "-", doing: "Yes", notes: "Sticks drying" },
-      { rowIndex: 17, name: "Off the Shoulder Top", patternLink: "https://pin.it", where: "Pinterest", paid: 0, yarn: "DK Spairs", hook: "-", doing: "Yes", notes: "Ready to go" },
-      { rowIndex: 18, name: "Butterfly Tapestry", patternLink: "https://pin.it", where: "Pinterest", paid: 0, yarn: "Fine", hook: "-", doing: "Not started", notes: "Need yarn" }
-    ];
-
-    const DEFAULT_ROUGH = [
-      "Tunisian sweater with colour work",
-      "granny square back long cardi",
-      "Tapestries - just need two colours that compliment",
-      "Tunisian crochet hooks with cables!"
+    // Guaranteed list of projects directly from your Ts Yarn document
+    const KNOWN_PROJECTS = [
+      "Bedside hanger",
+      "Floral fillet tapestry",
+      "Shorts",
+      "Bunny",
+      "Granny sweater",
+      "Scarf",
+      "Granny square T-shirt",
+      "Mesh shirt",
+      "Frog",
+      "Wings",
+      "Fern wreath",
+      "Mesh bolero",
+      "Millipede",
+      "Lauri headscarf",
+      "Collosseum top",
+      "Hexagon Cardigan",
+      "Teardrops Clothes Basket",
+      "Leaf Bandana",
+      "Butterfly Cardigan",
+      "White and Blue Scarf",
+      "Bifurca Pullover",
+      "Crochet Cable Cardi",
+      "Willow Sweater",
+      "Tattoo Banner",
+      "Bedside Holder",
+      "Off the Shoulder Top",
+      "Butterfly Tapestry"
     ];
 
     let stash = JSON.parse(localStorage.getItem('stash_data')) || [];
-    let planner = JSON.parse(localStorage.getItem('planner_data')) || DEFAULT_PLANNER;
-    let ideas = JSON.parse(localStorage.getItem('ideas_data')) || DEFAULT_IDEAS;
-    let roughNotes = JSON.parse(localStorage.getItem('notes_data')) || DEFAULT_ROUGH;
+    let planner = JSON.parse(localStorage.getItem('planner_data')) || [];
+    let ideas = JSON.parse(localStorage.getItem('ideas_data')) || [];
+    let roughNotes = JSON.parse(localStorage.getItem('notes_data')) || [];
 
     let activeTab = 'yarn';
     let currentFilter = 'all';
+    let skeinBeingAssigned = null;
 
     function setSyncStatus(state, text) {
       const el = document.getElementById('sync-indicator');
@@ -689,43 +734,76 @@
       }
     }
 
-    // Gathers and cleans EVERY project name across all sources
+    // Gathers and dedupes all project names
     function getAllProjectsList() {
       const set = new Set();
+      KNOWN_PROJECTS.forEach(name => set.add(name.trim()));
 
-      const clean = (val) => {
-        if (!val || typeof val !== 'string') return '';
-        const s = val.trim();
-        const lower = s.toLowerCase();
-        if (!s || s === 'TRUE' || s === 'FALSE' || lower === 'project name' || s.startsWith('--') || lower.startsWith('project planner') || lower.startsWith('other idea')) {
-          return '';
-        }
-        return s;
-      };
-
-      // 1. Projects from Planner tab
       (planner || []).forEach(p => {
-        const n = clean(p && p.name);
-        if (n) set.add(n);
+        if (p && p.name && p.name.trim() !== "" && p.name !== "Project Name") {
+          set.add(p.name.trim());
+        }
       });
 
-      // 2. Ideas from Wishlist
       (ideas || []).forEach(i => {
-        const n = clean(i && i.name);
-        if (n) set.add(n);
+        if (i && i.name && i.name.trim() !== "" && i.name !== "Project Name") {
+          set.add(i.name.trim());
+        }
       });
 
-      // 3. Any projects currently assigned to yarn skeins in Stock
       (stash || []).forEach(s => {
-        const n = clean(s && s.project);
-        if (n) set.add(n);
+        if (s && s.project && s.project.trim() !== "" && s.project !== "TRUE" && s.project !== "FALSE") {
+          set.add(s.project.trim());
+        }
       });
-
-      // 4. Ensure permanent fallbacks exist if lists are empty
-      DEFAULT_PLANNER.forEach(p => set.add(p.name));
-      DEFAULT_IDEAS.forEach(i => set.add(i.name));
 
       return Array.from(set).filter(Boolean).sort((a, b) => a.localeCompare(b));
+    }
+
+    // Opens the clean bottom-sheet picker
+    function openAssignPicker(rowIndex) {
+      skeinBeingAssigned = rowIndex;
+      const item = stash.find(s => s.rowIndex === rowIndex);
+      const skeinName = item ? (item.name + ' (' + item.colour + ')') : 'this skein';
+      document.getElementById('assign-picker-subtitle').innerText = 'Assign project for ' + skeinName + ':';
+
+      const allProjects = getAllProjectsList();
+      const container = document.getElementById('picker-items-container');
+
+      container.innerHTML = allProjects.map(proj => `
+        <div class="picker-item" onclick="selectProjectFromPicker('${proj.replace(/'/g, "\\'")}')">
+          <span>🧵 ${proj}</span>
+          ${item && item.project === proj ? '<span style="color:var(--primary);">✓ Active</span>' : '<span style="color:var(--text-muted); font-size:0.8rem;">Select →</span>'}
+        </div>
+      `).join('');
+
+      openModal('assign-picker-modal');
+    }
+
+    function selectProjectFromPicker(projectName) {
+      if (!skeinBeingAssigned) return;
+      const item = stash.find(s => s.rowIndex === skeinBeingAssigned);
+      if (item) item.project = projectName;
+      render();
+      closeModal('assign-picker-modal');
+      postAction({ action: 'UPDATE_PROJECT', rowIndex: skeinBeingAssigned, project: projectName });
+    }
+
+    function unassignCurrentSkein() {
+      if (!skeinBeingAssigned) return;
+      const item = stash.find(s => s.rowIndex === skeinBeingAssigned);
+      if (item) item.project = "";
+      render();
+      closeModal('assign-picker-modal');
+      postAction({ action: 'UPDATE_PROJECT', rowIndex: skeinBeingAssigned, project: "" });
+    }
+
+    function createNewProjectFromPicker() {
+      const custom = prompt('Enter new project name:');
+      if (custom && custom.trim() !== '') {
+        KNOWN_PROJECTS.push(custom.trim());
+        selectProjectFromPicker(custom.trim());
+      }
     }
 
     function setFilter(filter) {
@@ -820,7 +898,6 @@
       }
 
       const query = document.getElementById('search-bar').value.toLowerCase();
-      const allProjects = getAllProjectsList();
 
       if (activeTab === 'yarn') {
         const filtered = stash.filter(item => {
@@ -849,13 +926,10 @@
               ${item.project ? `<span class="tag project">🧵 ${item.project}</span>` : ''}
             </div>
             <div class="card-actions">
-              <select class="assign-select" onchange="assignProject(${item.rowIndex}, this.value)">
-                <option value="">-- Assign Project --</option>
-                ${allProjects.map(p => `
-                  <option value="${p}" ${item.project === p ? 'selected' : ''}>${p}</option>
-                `).join('')}
-                <option value="__NEW__">+ New Project...</option>
-              </select>
+              <button class="btn-assign" onclick="openAssignPicker(${item.rowIndex})">
+                <span>${item.project ? '🧵 ' + item.project : '-- Assign Project --'}</span>
+                <span style="color:var(--text-muted); font-size:0.75rem;">▼</span>
+              </button>
               <button class="delete-btn" onclick="deleteYarn(${item.rowIndex})">Delete</button>
             </div>
           </div>
@@ -995,20 +1069,6 @@
       render();
       closeModal('edit-idea-modal');
       postAction({ action: 'DELETE_ROW', rowIndex });
-    }
-
-    // Yarn & Note actions
-    function assignProject(rowIndex, value) {
-      let finalProject = value;
-      if (value === '__NEW__') {
-        const custom = prompt('Enter new project name:');
-        if (!custom) return render();
-        finalProject = custom.trim();
-      }
-      const item = stash.find(i => i.rowIndex === rowIndex);
-      if (item) item.project = finalProject;
-      render();
-      postAction({ action: 'UPDATE_PROJECT', rowIndex, project: finalProject });
     }
 
     function deleteYarn(rowIndex) {
