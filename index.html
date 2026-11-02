@@ -27,11 +27,11 @@
       font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
       background-color: var(--bg);
       color: var(--text);
-      padding-bottom: 110px;
+      padding-bottom: 120px;
     }
     header {
       background: var(--card-bg);
-      padding: 14px 18px 10px;
+      padding: 12px 16px 10px;
       position: sticky;
       top: 0;
       z-index: 20;
@@ -43,11 +43,29 @@
       align-items: center;
       margin-bottom: 10px;
     }
-    h1 { font-size: 1.35rem; font-weight: 700; color: var(--primary); letter-spacing: -0.5px; }
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    h1 { font-size: 1.3rem; font-weight: 700; color: var(--primary); letter-spacing: -0.5px; }
+    .header-calc-btn {
+      font-size: 0.78rem;
+      font-weight: 700;
+      padding: 5px 10px;
+      border-radius: 14px;
+      background: #2c2724;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
     .sync-status {
       font-size: 0.75rem;
       font-weight: 600;
-      padding: 4px 10px;
+      padding: 4px 8px;
       border-radius: 12px;
       background: #eee;
       color: #666;
@@ -57,10 +75,10 @@
     .sync-status.syncing { background: #fff3cd; color: #856404; }
     .search-input {
       width: 100%;
-      padding: 10px 14px;
+      padding: 9px 14px;
       border: 1px solid var(--border);
       border-radius: 12px;
-      font-size: 0.95rem;
+      font-size: 0.92rem;
       background: #faf8f5;
       color: var(--text);
       outline: none;
@@ -70,7 +88,7 @@
       display: flex;
       gap: 8px;
       overflow-x: auto;
-      padding: 10px 18px;
+      padding: 10px 16px;
       scrollbar-width: none;
     }
     .filter-chips::-webkit-scrollbar { display: none; }
@@ -117,13 +135,13 @@
       margin-left: 6px;
     }
     .qty-btn {
-      width: 24px;
-      height: 24px;
+      width: 26px;
+      height: 26px;
       border-radius: 50%;
       border: 1px solid var(--border);
       background: #fff;
       color: var(--text);
-      font-size: 0.9rem;
+      font-size: 0.95rem;
       font-weight: 700;
       display: inline-flex;
       align-items: center;
@@ -185,6 +203,81 @@
       display: inline-flex;
       align-items: center;
       gap: 4px;
+    }
+
+    /* Redesigned Row Counter Banner */
+    .row-counter-card {
+      margin-top: 10px;
+      padding: 10px 14px;
+      background: #fdfaf6;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .row-counter-info {
+      display: flex;
+      flex-direction: column;
+    }
+    .row-counter-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+    .row-counter-num {
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: var(--primary);
+      line-height: 1.1;
+    }
+    .row-counter-controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .step-btn {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: #fff;
+      color: var(--text);
+      font-size: 1.2rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+    .step-btn.plus {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+    .step-btn:active { opacity: 0.8; }
+
+    /* Dedicated PDF File Pill inside Card */
+    .pdf-attachment-bar {
+      margin-top: 8px;
+      padding: 8px 12px;
+      background: #f4efe8;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .pdf-name-text {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      flex: 1;
     }
 
     .card-actions {
@@ -273,49 +366,13 @@
       margin-bottom: 8px;
     }
 
-    .row-counter-box {
-      margin-top: 10px;
-      padding: 10px 14px;
-      background: #fdfaf6;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-    .counter-display { font-size: 1.25rem; font-weight: 800; color: var(--primary); }
-
-    .floating-tools-bar {
-      position: fixed;
-      bottom: 78px;
-      left: 16px;
-      right: 16px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      pointer-events: none;
-      z-index: 25;
-    }
-    .fab-calc {
-      pointer-events: auto;
-      height: 44px;
-      padding: 0 16px;
-      border-radius: 22px;
-      background: #2c2724;
-      color: #fff;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 0.82rem;
-      font-weight: 700;
-      border: none;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.15);
-      cursor: pointer;
-    }
+    /* Floating Add Button positioned safely */
     .fab-add {
-      pointer-events: auto;
-      width: 52px;
-      height: 52px;
+      position: fixed;
+      bottom: 76px;
+      right: 18px;
+      width: 50px;
+      height: 50px;
       border-radius: 50%;
       background: var(--primary);
       color: #fff;
@@ -326,6 +383,7 @@
       border: none;
       box-shadow: 0 6px 20px rgba(201, 100, 89, 0.4);
       cursor: pointer;
+      z-index: 25;
     }
 
     .tab-bar {
@@ -333,7 +391,7 @@
       bottom: 0;
       left: 0;
       right: 0;
-      height: 65px;
+      height: 62px;
       background: #fff;
       display: flex;
       border-top: 1px solid var(--border);
@@ -455,7 +513,10 @@
   <header>
     <div class="header-row">
       <h1 id="view-title">Yarn Stash</h1>
-      <span id="sync-indicator" class="sync-status" onclick="fetchFromSheet()">🔄 Syncing...</span>
+      <div class="header-actions">
+        <button class="header-calc-btn" onclick="openModal('calc-modal')">🧶 Calc</button>
+        <span id="sync-indicator" class="sync-status" onclick="fetchFromSheet()">🔄 Syncing...</span>
+      </div>
     </div>
     <input type="text" id="search-bar" class="search-input" placeholder="Search..." />
   </header>
@@ -520,11 +581,8 @@
     </div>
   </main>
 
-  <!-- Floating Tools -->
-  <div class="floating-tools-bar">
-    <button class="fab-calc" onclick="openModal('calc-modal')">🧶 Calc</button>
-    <button class="fab-add" id="main-fab" onclick="handleFabClick()">+</button>
-  </div>
+  <!-- Floating Add Button -->
+  <button class="fab-add" id="main-fab" onclick="handleFabClick()">+</button>
 
   <!-- Bottom Navigation -->
   <nav class="tab-bar">
@@ -725,7 +783,7 @@
     </div>
   </div>
 
-  <!-- Edit Planner Modal (Status is now a free text box with suggestions) -->
+  <!-- Edit Planner Modal -->
   <div class="modal" id="edit-planner-modal">
     <div class="modal-content">
       <h2 style="font-size: 1.2rem; margin-bottom: 14px;">Edit Project</h2>
@@ -809,7 +867,6 @@
     </div>
   </div>
 
-  <!-- Reusable Status Autocomplete Datalist -->
   <datalist id="status-options">
     <option value="Ready to go"></option>
     <option value="In progress"></option>
@@ -836,12 +893,54 @@
     let ideas = JSON.parse(localStorage.getItem('ideas_data')) || [];
     let roughNotes = JSON.parse(localStorage.getItem('notes_data')) || [];
     let projectRowCounters = JSON.parse(localStorage.getItem('row_counters_data')) || {};
-    let projectPdfs = JSON.parse(localStorage.getItem('project_pdfs_meta')) || {};
+    let projectPdfsMeta = JSON.parse(localStorage.getItem('project_pdfs_meta')) || {};
 
     let activeTab = 'yarn';
     let currentFilter = 'all';
     let skeinBeingAssigned = null;
     let showCompletedArchive = false;
+
+    // --- IndexedDB for Reliable, Unlimited PDF File Storage ---
+    function openDb() {
+      return new Promise((resolve, reject) => {
+        const req = indexedDB.open("CrochetPatternFilesDB", 1);
+        req.onupgradeneeded = (e) => {
+          e.target.result.createObjectStore("pdf_store");
+        };
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => reject(req.error);
+      });
+    }
+
+    async function savePdfBlobToDb(projectName, blob) {
+      const db = await openDb();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction("pdf_store", "readwrite");
+        tx.objectStore("pdf_store").put(blob, projectName);
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+      });
+    }
+
+    async function getPdfBlobFromDb(projectName) {
+      const db = await openDb();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction("pdf_store", "readonly");
+        const req = tx.objectStore("pdf_store").get(projectName);
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => reject(req.error);
+      });
+    }
+
+    async function removePdfBlobFromDb(projectName) {
+      const db = await openDb();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction("pdf_store", "readwrite");
+        tx.objectStore("pdf_store").delete(projectName);
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+      });
+    }
 
     function setSyncStatus(state, text) {
       const el = document.getElementById('sync-indicator');
@@ -969,7 +1068,6 @@
       }
     }
 
-    // Fixed Ravelry Search: Queries exclusively by weight and available yardage
     function searchRavelryByWeightAndYardage(weight, meters) {
       const weightMap = {
         'fine': 'fingering',
@@ -982,14 +1080,12 @@
       const ravelryWeight = weightMap[cleanWeight] || cleanWeight;
 
       let url = `https://www.ravelry.com/patterns/search#craft=crochet&weight=${encodeURIComponent(ravelryWeight)}`;
-
       const m = parseInt(meters);
       if (m && m > 0) {
         const minMeters = Math.max(0, Math.floor(m * 0.85));
         const maxMeters = Math.ceil(m * 1.15);
         url += `&meterage=${minMeters}%7C${maxMeters}`;
       }
-
       window.open(url, '_blank');
     }
 
@@ -1009,38 +1105,57 @@
       }
     }
 
-    // Pattern / PDF Attachment (With safe metadata storage and in-memory object URL)
-    const inMemoryPdfBlobs = {};
-
+    // PDF / Pattern File Upload via IndexedDB
     function attachPdfToProject(projectName) {
       const input = document.createElement('input');
       input.type = 'file';
       input.accept = 'application/pdf,image/*';
-      input.onchange = (e) => {
+      input.onchange = async (e) => {
         const file = e.target.files[0];
         if (!file) return;
 
-        // Store active blob URL in memory for immediate viewing
-        inMemoryPdfBlobs[projectName] = URL.createObjectURL(file);
-        
-        // Store filename metadata in localStorage
-        projectPdfs[projectName] = { name: file.name, date: new Date().toLocaleDateString() };
-        if (projectRowCounters[projectName] === undefined) projectRowCounters[projectName] = 0;
+        try {
+          await savePdfBlobToDb(projectName, file);
+          projectPdfsMeta[projectName] = { name: file.name, size: file.size };
+          if (projectRowCounters[projectName] === undefined) projectRowCounters[projectName] = 0;
 
-        localStorage.setItem('project_pdfs_meta', JSON.stringify(projectPdfs));
-        localStorage.setItem('row_counters_data', JSON.stringify(projectRowCounters));
-        render();
+          localStorage.setItem('project_pdfs_meta', JSON.stringify(projectPdfsMeta));
+          localStorage.setItem('row_counters_data', JSON.stringify(projectRowCounters));
+          render();
+        } catch (err) {
+          alert('Could not save file to device storage.');
+        }
       };
       input.click();
     }
 
-    function openProjectPdf(projectName) {
-      const blobUrl = inMemoryPdfBlobs[projectName];
-      if (blobUrl) {
-        window.open(blobUrl, '_blank');
-      } else {
-        alert(`Pattern file "${projectPdfs[projectName]?.name || 'attached'}" is active for this session. Re-select the file anytime to view the full PDF reader.`);
+    async function openProjectPdf(projectName) {
+      try {
+        const blob = await getPdfBlobFromDb(projectName);
+        if (blob) {
+          const url = URL.createObjectURL(blob);
+          const win = window.open(url, '_blank');
+          if (!win) {
+            // Fallback for pop-up blockers on mobile:
+            const a = document.createElement('a');
+            a.href = url;
+            a.target = '_blank';
+            a.click();
+          }
+        } else {
+          alert('PDF could not be found. Please re-attach the file.');
+        }
+      } catch (e) {
+        alert('Error reading PDF file.');
       }
+    }
+
+    async function removeProjectPdf(projectName) {
+      if (!confirm(`Remove attached pattern for "${projectName}"?`)) return;
+      await removePdfBlobFromDb(projectName);
+      delete projectPdfsMeta[projectName];
+      localStorage.setItem('project_pdfs_meta', JSON.stringify(projectPdfsMeta));
+      render();
     }
 
     function getStackedStash(rawList) {
@@ -1117,7 +1232,7 @@
 
     function selectProjectFromPicker(projectName) {
       if (!skeinBeingAssigned) return;
-      const item = stash.find(s => s.rowIndex === rowIndexHelper(skeinBeingAssigned));
+      const item = stash.find(s => s.rowIndex === Number(skeinBeingAssigned));
       if (item) {
         item.project = projectName;
         localStorage.setItem('stash_data', JSON.stringify(stash));
@@ -1127,13 +1242,9 @@
       postAction({ action: 'UPDATE_PROJECT', rowIndex: skeinBeingAssigned, project: projectName });
     }
 
-    function rowIndexHelper(idx) {
-      return Number(idx);
-    }
-
     function unassignCurrentSkein() {
       if (!skeinBeingAssigned) return;
-      const item = stash.find(s => s.rowIndex === rowIndexHelper(skeinBeingAssigned));
+      const item = stash.find(s => s.rowIndex === Number(skeinBeingAssigned));
       if (item) {
         item.project = "";
         localStorage.setItem('stash_data', JSON.stringify(stash));
@@ -1233,7 +1344,7 @@
       const assignedSkeins = getAssignedYarnFor(p.name);
       const isPatternUrl = p.pattern && (p.pattern.startsWith('http') || p.pattern.includes('.com') || p.pattern.includes('.it'));
       const patternUrl = isPatternUrl ? (p.pattern.startsWith('http') ? p.pattern : 'https://' + p.pattern) : null;
-      const attachedPdf = projectPdfs[p.name];
+      const pdfMeta = projectPdfsMeta[p.name];
       const rowCount = projectRowCounters[p.name] !== undefined ? projectRowCounters[p.name] : null;
 
       return `
@@ -1243,7 +1354,7 @@
               <div class="card-title">🧶 ${p.name}</div>
               <div class="card-subtitle">
                 ${patternUrl 
-                  ? `<a href="${patternUrl}" target="_blank" class="btn-action" style="padding:2px 8px; font-size:0.75rem; margin-top:3px;">🔗 Open Pattern</a>`
+                  ? `<a href="${patternUrl}" target="_blank" class="btn-action" style="padding:2px 8px; font-size:0.75rem; margin-top:3px;">🔗 Open Pattern Link</a>`
                   : `Pattern: ${p.pattern || 'Freehand'}`}
                 ${p.hook ? ' • Hook ' + p.hook : ''}
               </div>
@@ -1270,27 +1381,35 @@
             </div>
           </div>
 
-          <!-- Pattern PDF & Row Counter Widget -->
-          ${(attachedPdf || rowCount !== null) ? `
-            <div class="row-counter-box">
-              <div>
-                <div style="font-size:0.75rem; font-weight:700; color:var(--text-muted); text-transform:uppercase;">
-                  ${attachedPdf ? '📄 ' + attachedPdf.name : 'Row Counter'}
-                </div>
-                <div class="counter-display">Row ${rowCount || 0}</div>
-                ${attachedPdf ? `<button class="btn-action" style="padding:2px 8px; font-size:0.75rem; margin-top:4px;" onclick="openProjectPdf('${p.name}')">View File</button>` : ''}
+          <!-- Attached PDF File Info Bar -->
+          ${pdfMeta ? `
+            <div class="pdf-attachment-bar">
+              <span class="pdf-name-text">📄 ${pdfMeta.name}</span>
+              <div style="display:flex; gap:6px;">
+                <button class="btn-action" style="padding:4px 10px; font-size:0.75rem;" onclick="openProjectPdf('${p.name}')">View File</button>
+                <button class="delete-btn" style="padding:2px 6px; font-size:0.85rem;" onclick="removeProjectPdf('${p.name}')">✕</button>
               </div>
-              <div style="display:flex; align-items:center; gap:8px;">
-                <button class="qty-btn" onclick="adjustProjectRow('${p.name}', -1)">–</button>
-                <button class="qty-btn" style="background:var(--primary); color:#fff; border-color:var(--primary); width:32px; height:32px;" onclick="adjustProjectRow('${p.name}', 1)">+</button>
-                <button class="delete-btn" style="font-size:0.75rem;" onclick="resetProjectRow('${p.name}')">Reset</button>
+            </div>
+          ` : ''}
+
+          <!-- Wide Clean Row Counter -->
+          ${(pdfMeta || rowCount !== null) ? `
+            <div class="row-counter-card">
+              <div class="row-counter-info">
+                <span class="row-counter-label">Row Counter</span>
+                <span class="row-counter-num">Row ${rowCount || 0}</span>
+              </div>
+              <div class="row-counter-controls">
+                <button class="step-btn" onclick="adjustProjectRow('${p.name}', -1)">–</button>
+                <button class="step-btn plus" onclick="adjustProjectRow('${p.name}', 1)">+</button>
+                <button class="delete-btn" style="font-size:0.75rem; padding:4px;" onclick="resetProjectRow('${p.name}')">Reset</button>
               </div>
             </div>
           ` : ''}
 
           <div class="card-actions">
             <button class="btn-action" onclick="openEditPlanner(${p.rowIndex})">✏️ Edit Project</button>
-            <button class="btn-action" onclick="attachPdfToProject('${p.name}')">📄 ${attachedPdf ? 'Change PDF' : 'Attach PDF'}</button>
+            <button class="btn-action" onclick="attachPdfToProject('${p.name}')">📄 ${pdfMeta ? 'Replace PDF' : 'Attach PDF / Pattern'}</button>
           </div>
         </div>
       `;
@@ -1371,7 +1490,7 @@
         document.getElementById('ideas-list').innerHTML = ideas.map(i => {
           const assignedSkeins = getAssignedYarnFor(i.name);
           const hasLink = i.patternLink && i.patternLink.startsWith('http');
-          const attachedPdf = projectPdfs[i.name];
+          const pdfMeta = projectPdfsMeta[i.name];
           const rowCount = projectRowCounters[i.name] !== undefined ? projectRowCounters[i.name] : null;
 
           return `
@@ -1404,26 +1523,33 @@
                 </div>
               </div>
 
-              ${(attachedPdf || rowCount !== null) ? `
-                <div class="row-counter-box">
-                  <div>
-                    <div style="font-size:0.75rem; font-weight:700; color:var(--text-muted); text-transform:uppercase;">
-                      ${attachedPdf ? '📄 ' + attachedPdf.name : 'Row Counter'}
-                    </div>
-                    <div class="counter-display">Row ${rowCount || 0}</div>
-                    ${attachedPdf ? `<button class="btn-action" style="padding:2px 8px; font-size:0.75rem; margin-top:4px;" onclick="openProjectPdf('${i.name}')">View File</button>` : ''}
+              ${pdfMeta ? `
+                <div class="pdf-attachment-bar">
+                  <span class="pdf-name-text">📄 ${pdfMeta.name}</span>
+                  <div style="display:flex; gap:6px;">
+                    <button class="btn-action" style="padding:4px 10px; font-size:0.75rem;" onclick="openProjectPdf('${i.name}')">View File</button>
+                    <button class="delete-btn" style="padding:2px 6px; font-size:0.85rem;" onclick="removeProjectPdf('${i.name}')">✕</button>
                   </div>
-                  <div style="display:flex; align-items:center; gap:8px;">
-                    <button class="qty-btn" onclick="adjustProjectRow('${i.name}', -1)">–</button>
-                    <button class="qty-btn" style="background:var(--primary); color:#fff; border-color:var(--primary); width:32px; height:32px;" onclick="adjustProjectRow('${i.name}', 1)">+</button>
-                    <button class="delete-btn" style="font-size:0.75rem;" onclick="resetProjectRow('${i.name}')">Reset</button>
+                </div>
+              ` : ''}
+
+              ${(pdfMeta || rowCount !== null) ? `
+                <div class="row-counter-card">
+                  <div class="row-counter-info">
+                    <span class="row-counter-label">Row Counter</span>
+                    <span class="row-counter-num">Row ${rowCount || 0}</span>
+                  </div>
+                  <div class="row-counter-controls">
+                    <button class="step-btn" onclick="adjustProjectRow('${i.name}', -1)">–</button>
+                    <button class="step-btn plus" onclick="adjustProjectRow('${i.name}', 1)">+</button>
+                    <button class="delete-btn" style="font-size:0.75rem; padding:4px;" onclick="resetProjectRow('${i.name}')">Reset</button>
                   </div>
                 </div>
               ` : ''}
 
               <div class="card-actions">
                 <button class="btn-action" onclick="openEditIdea(${i.rowIndex})">✏️ Edit Idea</button>
-                <button class="btn-action" onclick="attachPdfToProject('${i.name}')">📄 ${attachedPdf ? 'Change PDF' : 'Attach PDF'}</button>
+                <button class="btn-action" onclick="attachPdfToProject('${i.name}')">📄 ${pdfMeta ? 'Replace PDF' : 'Attach PDF / Pattern'}</button>
               </div>
             </div>
           `;
