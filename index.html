@@ -680,10 +680,32 @@
 
     function getAllProjectsList() {
       const set = new Set();
-      planner.forEach(p => set.add(p.name));
-      ideas.forEach(i => set.add(i.name));
-      stash.forEach(s => { if (s.project) set.add(s.project); });
-      return Array.from(set).filter(Boolean).sort();
+
+      // Planner projects
+      planner.forEach(p => {
+        const name = (p && p.name ? String(p.name).trim() : '');
+        if (name && name !== 'Project Name' && !name.toLowerCase().startsWith('project planner')) {
+          set.add(name);
+        }
+      });
+
+      // Ideas / Wishlist
+      ideas.forEach(i => {
+        const name = (i && i.name ? String(i.name).trim() : '');
+        if (name && name !== 'Project Name' && !name.toLowerCase().startsWith('other idea')) {
+          set.add(name);
+        }
+      });
+
+      // Assigned projects from stash
+      stash.forEach(s => {
+        const proj = (s && s.project ? String(s.project).trim() : '');
+        if (proj && proj !== 'TRUE' && proj !== 'FALSE') {
+          set.add(proj);
+        }
+      });
+
+      return Array.from(set).filter(name => name.length > 0).sort((a, b) => a.localeCompare(b));
     }
 
     function setFilter(filter) {
