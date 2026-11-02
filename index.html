@@ -594,7 +594,7 @@
         </div>
       </div>
       <div class="form-group">
-        <label>Status / Doing?</label>
+        <label>Doing?</label>
         <select id="idea-doing">
           <option value="Not started">Not started</option>
           <option value="Yes">Yes (In progress)</option>
@@ -707,40 +707,37 @@
   <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbyL4si7OB71uYZJnrrtJb79gaitfdGcpkRwtM_T8S_kAhZBHFf3mhpLnMg4KB7b2oqZyw/exec";
 
-    const KNOWN_PROJECTS = [
-      "Bedside hanger",
-      "Floral fillet tapestry",
-      "Shorts",
-      "Bunny",
-      "Granny sweater",
-      "Scarf",
-      "Granny square T-shirt",
-      "Mesh shirt",
-      "Frog",
-      "Wings",
-      "Fern wreath",
-      "Mesh bolero",
-      "Millipede",
-      "Lauri headscarf",
-      "Collosseum top",
-      "Hexagon Cardigan",
-      "Teardrops Clothes Basket",
-      "Leaf Bandana",
-      "Butterfly Cardigan",
-      "White and Blue Scarf",
-      "Bifurca Pullover",
-      "Crochet Cable Cardi",
-      "Willow Sweater",
-      "Tattoo Banner",
-      "Bedside Holder",
-      "Off the Shoulder Top",
-      "Butterfly Tapestry"
+    // Baseline fallback data directly mirroring your spreadsheet[cite: 1, 4]
+    const FALLBACK_PLANNER = [
+      { rowIndex: 2, name: "Hexagon Cardigan", pattern: "Bought", yarn: "Hayfield Spirit DK - Bliss", hook: "4", status: "Complete", notes: "For Me" },
+      { rowIndex: 3, name: "Teardrops Clothes Basket", pattern: "NO", yarn: "N/A T-shirt yarn - Green", hook: "8", status: "Complete", notes: "For Home" },
+      { rowIndex: 4, name: "Leaf Bandana", pattern: "Bought", yarn: "Hayfield Spirit DK - Casper", hook: "4", status: "Complete", notes: "For Lily" },
+      { rowIndex: 5, name: "Butterfly Cardigan", pattern: "Bought", yarn: "Hayfield Bonus DK - Fawn", hook: "4", status: "Ready to go", notes: "For Sam" },
+      { rowIndex: 6, name: "White and Blue Scarf", pattern: "Freehand", yarn: "Hayfield Spirit Chunky - Blue", hook: "6 (Tunisian)", status: "Need fabric", notes: "?" }
+    ];
+
+    const FALLBACK_IDEAS = [
+      { rowIndex: 11, name: "Bifurca Pullover", patternLink: "Ravelry: Bifurca", where: "Ravelry", paid: 8, yarn: "-", hook: "-", doing: "-", notes: "Looks hard" },
+      { rowIndex: 12, name: "Crochet Cable Cardi", patternLink: "https://joslincrochet.com", where: "Online", paid: 5, yarn: "DK Cotton & Mohai", hook: "5", doing: "Not started", notes: "Not got the yarn" },
+      { rowIndex: 13, name: "Willow Sweater", patternLink: "https://www.etsy.com", where: "Etsy", paid: 11, yarn: "3x Acrylic Mohair", hook: "6 & 4.5", doing: "Not started", notes: "Lowkey expensive" },
+      { rowIndex: 14, name: "Tattoo Banner", patternLink: "Freehand", where: "Freehand", paid: 0, yarn: "-", hook: "-", doing: "Not started", notes: "Need to design" },
+      { rowIndex: 15, name: "Granny Sweater", patternLink: "https://vm.tiktok.com", where: "TikTok", paid: 0, yarn: "Any DK/Aran", hook: "5", doing: "Yes", notes: "Need to decide" },
+      { rowIndex: 16, name: "Bedside Holder", patternLink: "https://pin.it/2", where: "Pinterest", paid: 0, yarn: "Green T-shirt yarn", hook: "-", doing: "Yes", notes: "Sticks drying" },
+      { rowIndex: 17, name: "Off the Shoulder Top", patternLink: "https://pin.it/4", where: "Pinterest", paid: 0, yarn: "DK Spairs", hook: "-", doing: "Yes", notes: "Ready to go" },
+      { rowIndex: 18, name: "Butterfly Tapestry", patternLink: "https://pin.it/1", where: "Pinterest", paid: 0, yarn: "Fine", hook: "-", doing: "Not started", notes: "Need yarn" }
+    ];
+
+    const FALLBACK_ROUGH = [
+      "Tunisian sweater with colour work",
+      "granny square back long cardi",
+      "Tapestries - just need two colours that compliment",
+      "Tunisian crochet hooks with cables!"
     ];
 
     let stash = JSON.parse(localStorage.getItem('stash_data')) || [];
-    let planner = JSON.parse(localStorage.getItem('planner_data')) || [];
-    let ideas = JSON.parse(localStorage.getItem('ideas_data')) || [];
-    let roughNotes = JSON.parse(localStorage.getItem('notes_data')) || [];
+    let planner = JSON.parse(localStorage.getItem('planner_data')) || FALLBACK_PLANNER;
+    let ideas = JSON.parse(localStorage.getItem('ideas_data')) || FALLBACK_IDEAS;
+    let roughNotes = JSON.parse(localStorage.getItem('notes_data')) || FALLBACK_ROUGH;
 
     let activeTab = 'yarn';
     let currentFilter = 'all';
@@ -796,7 +793,8 @@
 
     function getAllProjectsList() {
       const set = new Set();
-      KNOWN_PROJECTS.forEach(name => set.add(name.trim()));
+      FALLBACK_PLANNER.forEach(p => set.add(p.name));
+      FALLBACK_IDEAS.forEach(i => set.add(i.name));
 
       (planner || []).forEach(p => {
         if (p && p.name && p.name.trim() !== "" && p.name !== "Project Name") {
@@ -880,7 +878,6 @@
     function createNewProjectFromPicker() {
       const custom = prompt('Enter new project name:');
       if (custom && custom.trim() !== '') {
-        KNOWN_PROJECTS.push(custom.trim());
         selectProjectFromPicker(custom.trim());
       }
     }
@@ -977,7 +974,7 @@
           <div class="card-head">
             <div>
               <div class="card-title">🧶 ${p.name}</div>
-              <div class="card-subtitle">Pattern: ${p.pattern} ${p.hook ? '• Hook ' + p.hook : ''}</div>
+              <div class="card-subtitle">Pattern: ${p.pattern || 'Freehand'} ${p.hook ? '• Hook ' + p.hook : ''}</div>
             </div>
             <span class="tag ${p.status === 'Complete' ? 'status-complete' : 'status-ready'}">${p.status}</span>
           </div>
@@ -1065,10 +1062,10 @@
           ? activeProjects.map(renderProjectCard).join('')
           : '<div style="font-size:0.85rem; color:var(--text-muted); font-style:italic; padding:8px 0;">No active projects right now.</div>';
 
-        // Completed Projects (Hidden inside archive accordion)
+        // Completed Projects
         document.getElementById('completed-list').innerHTML = completedProjects.map(renderProjectCard).join('');
 
-        // Ideas List
+        // Ideas List (Correctly uses .doing for badge, .yarn for yarn need)
         document.getElementById('ideas-list').innerHTML = ideas.map(i => {
           const assignedSkeins = getAssignedYarnFor(i.name);
           return `
