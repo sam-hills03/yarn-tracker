@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Crochet Stash & Projects</title>
+  <title>Crochet Stash & Planner</title>
   <meta name="theme-color" content="#d97768" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -13,8 +13,8 @@
       --primary-light: #fbeee9;
       --accent: #5b8266;
       --accent-light: #e8f0eb;
-      --idea-color: #6c5ce7;
-      --idea-light: #f1f0fd;
+      --stat-purple: #70587c;
+      --stat-purple-light: #f3edf7;
       --bg: #f8f6f2;
       --card-bg: #ffffff;
       --text: #2c2724;
@@ -178,6 +178,83 @@
       align-items: center;
       gap: 3px;
     }
+
+    /* Stats Grid & Bars */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .stat-metric-card {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      padding: 12px 8px;
+      text-align: center;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+    }
+    .stat-val {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--stat-purple);
+      margin-bottom: 2px;
+    }
+    .stat-label {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      font-weight: 600;
+      line-height: 1.1;
+    }
+    .chart-box {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      padding: 16px;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      margin-bottom: 14px;
+    }
+    .chart-box h3 {
+      font-size: 0.95rem;
+      color: var(--text);
+      margin-bottom: 12px;
+    }
+    .bar-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 9px;
+      font-size: 0.82rem;
+    }
+    .bar-label {
+      width: 90px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: var(--text);
+      font-weight: 500;
+    }
+    .bar-track {
+      flex: 1;
+      height: 14px;
+      background: #f1ecf5;
+      border-radius: 7px;
+      overflow: hidden;
+    }
+    .bar-fill {
+      height: 100%;
+      background: #c3b4db;
+      border-radius: 7px;
+      transition: width 0.4s ease;
+    }
+    .bar-count {
+      width: 26px;
+      text-align: right;
+      font-weight: 700;
+      color: var(--text-muted);
+    }
+
+    /* Tab Bar */
     .tab-bar {
       position: fixed;
       bottom: 0;
@@ -312,9 +389,37 @@
         <button class="chip active" onclick="saveQuickNote()">Add</button>
       </div>
     </div>
+
+    <!-- Stats View -->
+    <div id="stats-view" style="display:none;">
+      <div class="stats-grid">
+        <div class="stat-metric-card">
+          <div class="stat-val" id="metric-proj">0%</div>
+          <div class="stat-label">% with projects</div>
+        </div>
+        <div class="stat-metric-card">
+          <div class="stat-val" id="metric-new">0%</div>
+          <div class="stat-label">% new</div>
+        </div>
+        <div class="stat-metric-card">
+          <div class="stat-val" id="metric-scrap">0%</div>
+          <div class="stat-label">% scrap</div>
+        </div>
+      </div>
+
+      <div class="chart-box">
+        <h3>Count of Weight</h3>
+        <div id="weight-bars"></div>
+      </div>
+
+      <div class="chart-box">
+        <h3>Count of Colour</h3>
+        <div id="colour-bars"></div>
+      </div>
+    </div>
   </main>
 
-  <button class="fab" onclick="handleFabClick()">+</button>
+  <button class="fab" id="main-fab" onclick="handleFabClick()">+</button>
 
   <nav class="tab-bar">
     <button class="tab-btn active" id="tab-yarn" onclick="switchTab('yarn')">
@@ -324,6 +429,10 @@
     <button class="tab-btn" id="tab-projects" onclick="switchTab('projects')">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
       Projects & Ideas
+    </button>
+    <button class="tab-btn" id="tab-stats" onclick="switchTab('stats')">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M5 9.2h3V19H5zM10.6 5h2.8v14h-2.8zm5.6 8H19v6h-2.8z"/></svg>
+      Stats
     </button>
   </nav>
 
@@ -345,6 +454,7 @@
             <option value="Super Chunky">Super Chunky</option>
             <option value="Fine">Fine</option>
             <option value="Macrame">Macrame</option>
+            <option value="Cord">Cord</option>
           </select>
         </div>
         <div class="form-group" style="flex:1;">
@@ -389,7 +499,7 @@
       </div>
       <div style="display:flex; gap:10px;">
         <div class="form-group" style="flex:1;">
-          <label>Where (Etsy, TikTok, Ravelry)</label>
+          <label>Where</label>
           <input type="text" id="idea-where" placeholder="Etsy" />
         </div>
         <div class="form-group" style="flex:1;">
@@ -426,37 +536,10 @@
   <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbyL4si7OB71uYZJnrrtJb79gaitfdGcpkRwtM_T8S_kAhZBHFf3mhpLnMg4KB7b2oqZyw/exec";
 
-    // Initial fallback data
-    const FALLBACK_PLANNER = [
-      { rowIndex: 3, name: "Hexagon Cardigan", pattern: "Bought", yarn: "Hayfield Spirit DK - Bliss", hook: "4", status: "Complete", notes: "For Me" },
-      { rowIndex: 4, name: "Teardrops Clothes Basket", pattern: "NO", yarn: "N/A T-shirt yarn - Green", hook: "8", status: "Complete", notes: "For Home" },
-      { rowIndex: 5, name: "Leaf Bandana", pattern: "Bought", yarn: "Hayfield Spirit DK - Casper", hook: "4", status: "Complete", notes: "For Lily" },
-      { rowIndex: 6, name: "Butterfly Cardigan", pattern: "Bought", yarn: "Hayfield Bonus DK - Fawn", hook: "4", status: "Ready to go", notes: "For Sam" },
-      { rowIndex: 7, name: "White and Blue Scarf", pattern: "Freehand", yarn: "Hayfield Spirit Chunky", hook: "6 (Tunisian)", status: "Need fabric", notes: "?" }
-    ];
-
-    const FALLBACK_IDEAS = [
-      { rowIndex: 11, name: "Bifurca Pullover", patternLink: "https://ravelry.com", where: "Ravelry", paid: 8, yarn: "-", hook: "-", doing: "-", notes: "Looks hard" },
-      { rowIndex: 12, name: "Crochet Cable Cardi", patternLink: "https://joslincrochet.com", where: "Online", paid: 5, yarn: "DK Cotton & Mohair", hook: "5", doing: "Not started", notes: "Not got the yarn" },
-      { rowIndex: 13, name: "Willow Sweater", patternLink: "https://etsy.com", where: "Etsy", paid: 11, yarn: "3x Acrylic Mohair", hook: "6 & 4.5", doing: "Not started", notes: "Lowkey expensive" },
-      { rowIndex: 14, name: "Tattoo Banner", patternLink: "", where: "Freehand", paid: 0, yarn: "-", hook: "-", doing: "Not started", notes: "Need to design" },
-      { rowIndex: 15, name: "Granny Sweater", patternLink: "https://tiktok.com", where: "TikTok", paid: 0, yarn: "Any DK/Aran", hook: "5", doing: "Yes", notes: "Need to decide" },
-      { rowIndex: 16, name: "Bedside Holder", patternLink: "https://pin.it", where: "Pinterest", paid: 0, yarn: "Green T-shirt yarn", hook: "-", doing: "Yes", notes: "Sticks drying" },
-      { rowIndex: 17, name: "Off the Shoulder Top", patternLink: "https://pin.it", where: "Pinterest", paid: 0, yarn: "DK Spairs", hook: "-", doing: "Yes", notes: "Ready to go" },
-      { rowIndex: 18, name: "Butterfly Tapestry", patternLink: "https://pin.it", where: "Pinterest", paid: 0, yarn: "Fine", hook: "-", doing: "Not started", notes: "Need yarn" }
-    ];
-
-    const FALLBACK_ROUGH = [
-      "Tunisian sweater with colour work",
-      "granny square back long cardi",
-      "Tapestries - just need two colours that compliment",
-      "Tunisian crochet hooks with cables!"
-    ];
-
     let stash = JSON.parse(localStorage.getItem('stash_data')) || [];
-    let planner = JSON.parse(localStorage.getItem('planner_data')) || FALLBACK_PLANNER;
-    let ideas = JSON.parse(localStorage.getItem('ideas_data')) || FALLBACK_IDEAS;
-    let roughNotes = JSON.parse(localStorage.getItem('notes_data')) || FALLBACK_ROUGH;
+    let planner = JSON.parse(localStorage.getItem('planner_data')) || [];
+    let ideas = JSON.parse(localStorage.getItem('ideas_data')) || [];
+    let roughNotes = JSON.parse(localStorage.getItem('notes_data')) || [];
 
     let activeTab = 'yarn';
     let currentFilter = 'all';
@@ -525,22 +608,89 @@
       activeTab = tab;
       document.getElementById('tab-yarn').classList.toggle('active', tab === 'yarn');
       document.getElementById('tab-projects').classList.toggle('active', tab === 'projects');
+      document.getElementById('tab-stats').classList.toggle('active', tab === 'stats');
+
       document.getElementById('filter-container').style.display = tab === 'yarn' ? 'flex' : 'none';
+      document.getElementById('search-bar').style.display = tab === 'stats' ? 'none' : 'block';
+      document.getElementById('main-fab').style.display = tab === 'stats' ? 'none' : 'flex';
+
       document.getElementById('yarn-list').style.display = tab === 'yarn' ? 'flex' : 'none';
       document.getElementById('projects-view').style.display = tab === 'projects' ? 'block' : 'none';
-      document.getElementById('view-title').innerText = tab === 'yarn' ? 'Yarn Stash' : 'Projects & Ideas';
+      document.getElementById('stats-view').style.display = tab === 'stats' ? 'block' : 'none';
+
+      if (tab === 'yarn') document.getElementById('view-title').innerText = 'Yarn Stash';
+      if (tab === 'projects') document.getElementById('view-title').innerText = 'Projects & Ideas';
+      if (tab === 'stats') document.getElementById('view-title').innerText = 'Stash Stats';
+
       render();
     }
 
     function handleFabClick() {
       if (activeTab === 'yarn') {
         openModal('add-yarn-modal');
-      } else {
+      } else if (activeTab === 'projects') {
         openModal('add-idea-modal');
       }
     }
 
+    function renderStats() {
+      const total = stash.length;
+      if (total === 0) return;
+
+      const withProjects = stash.filter(i => i.project && i.project.trim() !== "").length;
+      const scraps = stash.filter(i => i.isScrap).length;
+      const newItems = total - scraps;
+
+      // Update metric cards
+      document.getElementById('metric-proj').innerText = ((withProjects / total) * 100).toFixed(1) + '%';
+      document.getElementById('metric-new').innerText = ((newItems / total) * 100).toFixed(1) + '%';
+      document.getElementById('metric-scrap').innerText = ((scraps / total) * 100).toFixed(1) + '%';
+
+      // Weight breakdown
+      const weightCounts = {};
+      stash.forEach(i => {
+        const w = (i.weight || 'Unknown').trim();
+        weightCounts[w] = (weightCounts[w] || 0) + 1;
+      });
+      const sortedWeights = Object.entries(weightCounts).sort((a,b) => b[1] - a[1]);
+      const maxWeightCount = sortedWeights[0] ? sortedWeights[0][1] : 1;
+
+      document.getElementById('weight-bars').innerHTML = sortedWeights.map(([weight, count]) => `
+        <div class="bar-row">
+          <div class="bar-label">${weight}</div>
+          <div class="bar-track">
+            <div class="bar-fill" style="width: ${(count / maxWeightCount) * 100}%"></div>
+          </div>
+          <div class="bar-count">${count}</div>
+        </div>
+      `).join('');
+
+      // Colour breakdown
+      const colourCounts = {};
+      stash.forEach(i => {
+        const c = (i.colour || 'Other').trim();
+        colourCounts[c] = (colourCounts[c] || 0) + 1;
+      });
+      const sortedColours = Object.entries(colourCounts).sort((a,b) => b[1] - a[1]);
+      const maxColourCount = sortedColours[0] ? sortedColours[0][1] : 1;
+
+      document.getElementById('colour-bars').innerHTML = sortedColours.map(([colour, count]) => `
+        <div class="bar-row">
+          <div class="bar-label">${colour}</div>
+          <div class="bar-track">
+            <div class="bar-fill" style="width: ${(count / maxColourCount) * 100}%; background: #b8a6d6;"></div>
+          </div>
+          <div class="bar-count">${count}</div>
+        </div>
+      `).join('');
+    }
+
     function render() {
+      if (activeTab === 'stats') {
+        renderStats();
+        return;
+      }
+
       const query = document.getElementById('search-bar').value.toLowerCase();
       const allProjects = getAllProjectsList();
 
@@ -580,8 +730,8 @@
             </div>
           </div>
         `).join('');
-      } else {
-        // Render Planner
+      } else if (activeTab === 'projects') {
+        // Planner
         document.getElementById('planner-list').innerHTML = planner.map(p => `
           <div class="card">
             <div class="card-head">
@@ -598,7 +748,7 @@
           </div>
         `).join('');
 
-        // Render Ideas
+        // Ideas
         document.getElementById('ideas-list').innerHTML = ideas.map(i => `
           <div class="card">
             <div class="card-head">
@@ -617,7 +767,7 @@
           </div>
         `).join('');
 
-        // Render Rough Notes
+        // Rough Notes
         document.getElementById('notes-list').innerHTML = roughNotes.map((n, idx) => `
           <div class="rough-note-item">
             <span>• ${n}</span>
