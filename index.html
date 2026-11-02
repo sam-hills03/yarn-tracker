@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Crochet Stash</title>
+  <title>Crochet Stash & Projects</title>
   <meta name="theme-color" content="#d97768" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -13,6 +13,8 @@
       --primary-light: #fbeee9;
       --accent: #5b8266;
       --accent-light: #e8f0eb;
+      --idea-color: #6c5ce7;
+      --idea-light: #f1f0fd;
       --bg: #f8f6f2;
       --card-bg: #ffffff;
       --text: #2c2724;
@@ -26,7 +28,7 @@
       font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
       background-color: var(--bg);
       color: var(--text);
-      padding-bottom: 90px;
+      padding-bottom: 95px;
     }
     header {
       background: var(--card-bg);
@@ -46,13 +48,10 @@
     .sync-status {
       font-size: 0.75rem;
       font-weight: 600;
-      padding: 3px 8px;
+      padding: 4px 10px;
       border-radius: 12px;
       background: #eee;
       color: #666;
-      display: flex;
-      align-items: center;
-      gap: 5px;
       cursor: pointer;
     }
     .sync-status.synced { background: var(--accent-light); color: var(--accent); }
@@ -89,7 +88,7 @@
     .chip.active { background: var(--primary); color: #fff; border-color: var(--primary); }
     main { padding: 8px 16px; }
     .card-list { display: flex; flex-direction: column; gap: 12px; }
-    .yarn-card {
+    .card {
       background: var(--card-bg);
       border-radius: var(--radius);
       padding: 14px 16px;
@@ -100,7 +99,7 @@
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
-      margin-bottom: 8px;
+      margin-bottom: 6px;
     }
     .card-title { font-size: 1.05rem; font-weight: 700; color: var(--text); }
     .card-subtitle { font-size: 0.85rem; color: var(--text-muted); margin-top: 2px; }
@@ -115,6 +114,17 @@
     }
     .tag.scrap { background: #feebe8; color: #b84335; }
     .tag.project { background: var(--accent-light); color: var(--accent); }
+    .tag.status-complete { background: #d4edda; color: #155724; }
+    .tag.status-ready { background: #cce5ff; color: #004085; }
+    .tag.status-doing { background: #d1ecf1; color: #0c5460; }
+    .card-notes {
+      font-size: 0.85rem;
+      color: var(--text);
+      background: #faf8f5;
+      padding: 8px 10px;
+      border-radius: 8px;
+      margin-top: 6px;
+    }
     .card-actions {
       display: flex;
       justify-content: space-between;
@@ -139,6 +149,34 @@
       font-size: 0.8rem;
       padding: 6px;
       cursor: pointer;
+    }
+    .section-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin: 16px 0 8px;
+    }
+    .rough-note-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #fff;
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      font-size: 0.9rem;
+      margin-bottom: 8px;
+    }
+    .link-btn {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--primary);
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
     }
     .tab-bar {
       position: fixed;
@@ -202,12 +240,13 @@
     }
     .form-group { margin-bottom: 12px; }
     .form-group label { display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 4px; color: var(--text-muted); }
-    .form-group input, .form-group select {
+    .form-group input, .form-group select, .form-group textarea {
       width: 100%;
       padding: 10px;
       border: 1px solid var(--border);
       border-radius: 10px;
       font-size: 0.95rem;
+      font-family: inherit;
     }
     .checkbox-row { display: flex; gap: 16px; margin: 12px 0; }
     .checkbox-item { display: flex; align-items: center; gap: 6px; font-size: 0.85rem; }
@@ -242,7 +281,7 @@
       <h1 id="view-title">Yarn Stash</h1>
       <span id="sync-indicator" class="sync-status" onclick="fetchFromSheet()">🔄 Syncing...</span>
     </div>
-    <input type="text" id="search-bar" class="search-input" placeholder="Search yarn name, colour, shade..." />
+    <input type="text" id="search-bar" class="search-input" placeholder="Search..." />
   </header>
 
   <div class="filter-chips" id="filter-container">
@@ -252,15 +291,30 @@
     <button class="chip" onclick="setFilter('scrap')">Scraps</button>
     <button class="chip" onclick="setFilter('DK')">DK</button>
     <button class="chip" onclick="setFilter('Chunky')">Chunky</button>
-    <button class="chip" onclick="setFilter('Aran')">Aran</button>
   </div>
 
   <main>
+    <!-- Stash View -->
     <div id="yarn-list" class="card-list"></div>
-    <div id="project-list" class="card-list" style="display:none;"></div>
+
+    <!-- Projects & Ideas View -->
+    <div id="projects-view" style="display:none;">
+      <div class="section-title">✨ Active Projects</div>
+      <div id="planner-list" class="card-list"></div>
+
+      <div class="section-title">💡 Pattern Ideas & Wishlist</div>
+      <div id="ideas-list" class="card-list"></div>
+
+      <div class="section-title">📝 Quick Notes</div>
+      <div id="notes-list"></div>
+      <div style="display:flex; gap:8px; margin-top:8px;">
+        <input type="text" id="quick-note-input" class="search-input" placeholder="Add rough idea or reminder..." />
+        <button class="chip active" onclick="saveQuickNote()">Add</button>
+      </div>
+    </div>
   </main>
 
-  <button class="fab" onclick="openAddModal()">+</button>
+  <button class="fab" onclick="handleFabClick()">+</button>
 
   <nav class="tab-bar">
     <button class="tab-btn active" id="tab-yarn" onclick="switchTab('yarn')">
@@ -269,12 +323,12 @@
     </button>
     <button class="tab-btn" id="tab-projects" onclick="switchTab('projects')">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
-      Projects
+      Projects & Ideas
     </button>
   </nav>
 
   <!-- Add Yarn Modal -->
-  <div class="modal" id="add-modal">
+  <div class="modal" id="add-yarn-modal">
     <div class="modal-content">
       <h2 style="font-size: 1.2rem; margin-bottom: 14px;">Add New Yarn</h2>
       <div class="form-group">
@@ -314,17 +368,96 @@
       </div>
       <div class="form-group">
         <label>Assign to Project (Optional)</label>
-        <input type="text" id="new-project" placeholder="e.g. Millipede, Bunny" />
+        <input type="text" id="new-project" placeholder="e.g. Hexagon Cardigan" />
       </div>
-      <button class="submit-btn" id="modal-submit-btn" onclick="saveNewYarn()">Save to Stash</button>
-      <button class="cancel-btn" onclick="closeAddModal()">Cancel</button>
+      <button class="submit-btn" onclick="saveNewYarn()">Save to Stash</button>
+      <button class="cancel-btn" onclick="closeModal('add-yarn-modal')">Cancel</button>
+    </div>
+  </div>
+
+  <!-- Add Idea Modal -->
+  <div class="modal" id="add-idea-modal">
+    <div class="modal-content">
+      <h2 style="font-size: 1.2rem; margin-bottom: 14px;">Add Project Idea</h2>
+      <div class="form-group">
+        <label>Project / Pattern Name</label>
+        <input type="text" id="idea-name" placeholder="e.g. Granny Square Cardigan" required />
+      </div>
+      <div class="form-group">
+        <label>Pattern Link (URL)</label>
+        <input type="url" id="idea-link" placeholder="e.g. https://ravelry.com/..." />
+      </div>
+      <div style="display:flex; gap:10px;">
+        <div class="form-group" style="flex:1;">
+          <label>Where (Etsy, TikTok, Ravelry)</label>
+          <input type="text" id="idea-where" placeholder="Etsy" />
+        </div>
+        <div class="form-group" style="flex:1;">
+          <label>Paid (£)</label>
+          <input type="number" id="idea-paid" placeholder="0" />
+        </div>
+      </div>
+      <div style="display:flex; gap:10px;">
+        <div class="form-group" style="flex:1;">
+          <label>Yarn Needed</label>
+          <input type="text" id="idea-yarn" placeholder="DK Cotton & Mohair" />
+        </div>
+        <div class="form-group" style="flex:1;">
+          <label>Hook</label>
+          <input type="text" id="idea-hook" placeholder="5" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Status / Doing?</label>
+        <select id="idea-doing">
+          <option value="Not started">Not started</option>
+          <option value="Yes">Yes (In progress)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Notes / Thoughts</label>
+        <textarea id="idea-notes" rows="2" placeholder="e.g. Need to buy yarn, looks tricky"></textarea>
+      </div>
+      <button class="submit-btn" onclick="saveNewIdea()">Save Idea</button>
+      <button class="cancel-btn" onclick="closeModal('add-idea-modal')">Cancel</button>
     </div>
   </div>
 
   <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbyL4si7OB71uYZJnrrtJb79gaitfdGcpkRwtM_T8S_kAhZBHFf3mhpLnMg4KB7b2oqZyw/exec";
 
-    let stash = JSON.parse(localStorage.getItem('crochet_stash')) || [];
+    // Initial fallback data
+    const FALLBACK_PLANNER = [
+      { rowIndex: 3, name: "Hexagon Cardigan", pattern: "Bought", yarn: "Hayfield Spirit DK - Bliss", hook: "4", status: "Complete", notes: "For Me" },
+      { rowIndex: 4, name: "Teardrops Clothes Basket", pattern: "NO", yarn: "N/A T-shirt yarn - Green", hook: "8", status: "Complete", notes: "For Home" },
+      { rowIndex: 5, name: "Leaf Bandana", pattern: "Bought", yarn: "Hayfield Spirit DK - Casper", hook: "4", status: "Complete", notes: "For Lily" },
+      { rowIndex: 6, name: "Butterfly Cardigan", pattern: "Bought", yarn: "Hayfield Bonus DK - Fawn", hook: "4", status: "Ready to go", notes: "For Sam" },
+      { rowIndex: 7, name: "White and Blue Scarf", pattern: "Freehand", yarn: "Hayfield Spirit Chunky", hook: "6 (Tunisian)", status: "Need fabric", notes: "?" }
+    ];
+
+    const FALLBACK_IDEAS = [
+      { rowIndex: 11, name: "Bifurca Pullover", patternLink: "https://ravelry.com", where: "Ravelry", paid: 8, yarn: "-", hook: "-", doing: "-", notes: "Looks hard" },
+      { rowIndex: 12, name: "Crochet Cable Cardi", patternLink: "https://joslincrochet.com", where: "Online", paid: 5, yarn: "DK Cotton & Mohair", hook: "5", doing: "Not started", notes: "Not got the yarn" },
+      { rowIndex: 13, name: "Willow Sweater", patternLink: "https://etsy.com", where: "Etsy", paid: 11, yarn: "3x Acrylic Mohair", hook: "6 & 4.5", doing: "Not started", notes: "Lowkey expensive" },
+      { rowIndex: 14, name: "Tattoo Banner", patternLink: "", where: "Freehand", paid: 0, yarn: "-", hook: "-", doing: "Not started", notes: "Need to design" },
+      { rowIndex: 15, name: "Granny Sweater", patternLink: "https://tiktok.com", where: "TikTok", paid: 0, yarn: "Any DK/Aran", hook: "5", doing: "Yes", notes: "Need to decide" },
+      { rowIndex: 16, name: "Bedside Holder", patternLink: "https://pin.it", where: "Pinterest", paid: 0, yarn: "Green T-shirt yarn", hook: "-", doing: "Yes", notes: "Sticks drying" },
+      { rowIndex: 17, name: "Off the Shoulder Top", patternLink: "https://pin.it", where: "Pinterest", paid: 0, yarn: "DK Spairs", hook: "-", doing: "Yes", notes: "Ready to go" },
+      { rowIndex: 18, name: "Butterfly Tapestry", patternLink: "https://pin.it", where: "Pinterest", paid: 0, yarn: "Fine", hook: "-", doing: "Not started", notes: "Need yarn" }
+    ];
+
+    const FALLBACK_ROUGH = [
+      "Tunisian sweater with colour work",
+      "granny square back long cardi",
+      "Tapestries - just need two colours that compliment",
+      "Tunisian crochet hooks with cables!"
+    ];
+
+    let stash = JSON.parse(localStorage.getItem('stash_data')) || [];
+    let planner = JSON.parse(localStorage.getItem('planner_data')) || FALLBACK_PLANNER;
+    let ideas = JSON.parse(localStorage.getItem('ideas_data')) || FALLBACK_IDEAS;
+    let roughNotes = JSON.parse(localStorage.getItem('notes_data')) || FALLBACK_ROUGH;
+
     let activeTab = 'yarn';
     let currentFilter = 'all';
 
@@ -339,12 +472,20 @@
       try {
         const res = await fetch(API_URL);
         const data = await res.json();
-        stash = data;
-        localStorage.setItem('crochet_stash', JSON.stringify(stash));
+        if (data.yarn) stash = data.yarn;
+        if (data.planner && data.planner.length) planner = data.planner;
+        if (data.ideas && data.ideas.length) ideas = data.ideas;
+        if (data.roughNotes && data.roughNotes.length) roughNotes = data.roughNotes;
+
+        localStorage.setItem('stash_data', JSON.stringify(stash));
+        localStorage.setItem('planner_data', JSON.stringify(planner));
+        localStorage.setItem('ideas_data', JSON.stringify(ideas));
+        localStorage.setItem('notes_data', JSON.stringify(roughNotes));
+
         setSyncStatus('synced', '✓ Synced');
         render();
       } catch (err) {
-        console.error("Fetch failed", err);
+        console.error(err);
         setSyncStatus('', 'Offline (Cached)');
         render();
       }
@@ -359,19 +500,18 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         });
-        setTimeout(fetchFromSheet, 1200); // Re-fetch to get updated row indexes
+        setTimeout(fetchFromSheet, 1200);
       } catch (err) {
-        console.error("Save error", err);
         setSyncStatus('', 'Save failed');
       }
     }
 
-    function getAllProjects() {
+    function getAllProjectsList() {
       const set = new Set();
-      stash.forEach(item => {
-        if (item.project && item.project.trim() !== "") set.add(item.project.trim());
-      });
-      return Array.from(set).sort();
+      planner.forEach(p => set.add(p.name));
+      ideas.forEach(i => set.add(i.name));
+      stash.forEach(s => { if (s.project) set.add(s.project); });
+      return Array.from(set).filter(Boolean).sort();
     }
 
     function setFilter(filter) {
@@ -386,32 +526,37 @@
       document.getElementById('tab-yarn').classList.toggle('active', tab === 'yarn');
       document.getElementById('tab-projects').classList.toggle('active', tab === 'projects');
       document.getElementById('filter-container').style.display = tab === 'yarn' ? 'flex' : 'none';
-      document.getElementById('view-title').innerText = tab === 'yarn' ? 'Yarn Stash' : 'Projects';
+      document.getElementById('yarn-list').style.display = tab === 'yarn' ? 'flex' : 'none';
+      document.getElementById('projects-view').style.display = tab === 'projects' ? 'block' : 'none';
+      document.getElementById('view-title').innerText = tab === 'yarn' ? 'Yarn Stash' : 'Projects & Ideas';
       render();
     }
 
+    function handleFabClick() {
+      if (activeTab === 'yarn') {
+        openModal('add-yarn-modal');
+      } else {
+        openModal('add-idea-modal');
+      }
+    }
+
     function render() {
-      const yarnList = document.getElementById('yarn-list');
-      const projectList = document.getElementById('project-list');
       const query = document.getElementById('search-bar').value.toLowerCase();
-      const allProjects = getAllProjects();
+      const allProjects = getAllProjectsList();
 
       if (activeTab === 'yarn') {
-        yarnList.style.display = 'flex';
-        projectList.style.display = 'none';
-
         const filtered = stash.filter(item => {
           const matchQuery = (item.name + " " + item.colour + " " + (item.shade || '') + " " + item.weight).toLowerCase().includes(query);
           if (!matchQuery) return false;
           if (currentFilter === 'all') return true;
-          if (currentFilter === 'unassigned') return !item.project || item.project === "";
-          if (currentFilter === 'in-project') return item.project && item.project !== "";
+          if (currentFilter === 'unassigned') return !item.project;
+          if (currentFilter === 'in-project') return Boolean(item.project);
           if (currentFilter === 'scrap') return item.isScrap;
           return item.weight === currentFilter;
         });
 
-        yarnList.innerHTML = filtered.map(item => `
-          <div class="yarn-card">
+        document.getElementById('yarn-list').innerHTML = filtered.map(item => `
+          <div class="card">
             <div class="card-head">
               <div>
                 <div class="card-title">${item.name || 'Unnamed Skein'}</div>
@@ -436,26 +581,49 @@
           </div>
         `).join('');
       } else {
-        yarnList.style.display = 'none';
-        projectList.style.display = 'flex';
-
-        projectList.innerHTML = allProjects.map(proj => {
-          const assigned = stash.filter(i => i.project === proj);
-          return `
-            <div class="yarn-card">
-              <div class="card-head">
-                <div class="card-title">🧵 ${proj}</div>
-                <span class="tag project">${assigned.length} skeins</span>
+        // Render Planner
+        document.getElementById('planner-list').innerHTML = planner.map(p => `
+          <div class="card">
+            <div class="card-head">
+              <div>
+                <div class="card-title">🧶 ${p.name}</div>
+                <div class="card-subtitle">Pattern: ${p.pattern} ${p.hook ? '• Hook ' + p.hook : ''}</div>
               </div>
-              <div style="margin: 8px 0; font-size: 0.85rem; color: var(--text-muted);">
-                ${assigned.map(a => `<div>• <b>${a.name}</b> (${a.colour} ${a.weight})</div>`).join('')}
-              </div>
-              <div class="card-actions">
-                <button class="delete-btn" onclick="unassignAllFromProject('${proj}')">Finish / Unassign All</button>
-              </div>
+              <span class="tag ${p.status === 'Complete' ? 'status-complete' : 'status-ready'}">${p.status}</span>
             </div>
-          `;
-        }).join('');
+            <div class="tags">
+              ${p.yarn ? `<span class="tag">Yarn: ${p.yarn}</span>` : ''}
+            </div>
+            ${p.notes ? `<div class="card-notes"><b>Note:</b> ${p.notes}</div>` : ''}
+          </div>
+        `).join('');
+
+        // Render Ideas
+        document.getElementById('ideas-list').innerHTML = ideas.map(i => `
+          <div class="card">
+            <div class="card-head">
+              <div>
+                <div class="card-title">💡 ${i.name}</div>
+                <div class="card-subtitle">${i.where || ''} ${i.paid > 0 ? '• £' + i.paid : ''}</div>
+              </div>
+              <span class="tag ${i.doing === 'Yes' ? 'status-doing' : ''}">${i.doing}</span>
+            </div>
+            <div class="tags">
+              ${i.yarn && i.yarn !== '-' ? `<span class="tag">Yarn: ${i.yarn}</span>` : ''}
+              ${i.hook && i.hook !== '-' ? `<span class="tag">Hook: ${i.hook}</span>` : ''}
+              ${i.patternLink && i.patternLink.startsWith('http') ? `<a href="${i.patternLink}" target="_blank" class="link-btn">🔗 Open Pattern</a>` : ''}
+            </div>
+            ${i.notes ? `<div class="card-notes"><b>Note:</b> ${i.notes}</div>` : ''}
+          </div>
+        `).join('');
+
+        // Render Rough Notes
+        document.getElementById('notes-list').innerHTML = roughNotes.map((n, idx) => `
+          <div class="rough-note-item">
+            <span>• ${n}</span>
+            <button class="delete-btn" onclick="deleteQuickNote(${idx})">✕</button>
+          </div>
+        `).join('');
       }
     }
 
@@ -463,56 +631,27 @@
       let finalProject = value;
       if (value === '__NEW__') {
         const custom = prompt('Enter new project name:');
-        if (!custom || custom.trim() === '') return render();
+        if (!custom) return render();
         finalProject = custom.trim();
       }
-
-      // Optimistic local update
-      const target = stash.find(i => i.rowIndex === rowIndex);
-      if (target) target.project = finalProject;
+      const item = stash.find(i => i.rowIndex === rowIndex);
+      if (item) item.project = finalProject;
       render();
-
-      postAction({
-        action: 'UPDATE_PROJECT',
-        rowIndex: rowIndex,
-        project: finalProject
-      });
-    }
-
-    function unassignAllFromProject(projectName) {
-      if (!confirm(`Free up all yarn from "${projectName}"?`)) return;
-      const matching = stash.filter(i => i.project === projectName);
-      matching.forEach(i => {
-        i.project = "";
-        postAction({
-          action: 'UPDATE_PROJECT',
-          rowIndex: i.rowIndex,
-          project: ""
-        });
-      });
-      render();
+      postAction({ action: 'UPDATE_PROJECT', rowIndex: rowIndex, project: finalProject });
     }
 
     function deleteYarn(rowIndex) {
-      if (!confirm("Remove this yarn from the sheet?")) return;
+      if (!confirm("Remove this yarn from stock?")) return;
       stash = stash.filter(i => i.rowIndex !== rowIndex);
       render();
-
-      postAction({
-        action: 'DELETE',
-        rowIndex: rowIndex
-      });
+      postAction({ action: 'DELETE_YARN', rowIndex: rowIndex });
     }
-
-    function openAddModal() { document.getElementById('add-modal').classList.add('active'); }
-    function closeAddModal() { document.getElementById('add-modal').classList.remove('active'); }
 
     function saveNewYarn() {
       const name = document.getElementById('new-name').value.trim();
-      if (!name) return alert('Please enter a name or brand');
-
+      if (!name) return alert('Please enter a name');
       const yarn = {
-        name: name,
+        name,
         weight: document.getElementById('new-weight').value,
         colour: document.getElementById('new-colour').value.trim() || 'Assorted',
         shade: document.getElementById('new-shade').value.trim(),
@@ -521,24 +660,50 @@
         hasTag: document.getElementById('new-has-tag').checked,
         project: document.getElementById('new-project').value.trim()
       };
-
-      stash.push({ ...yarn, rowIndex: stash.length + 2 });
+      stash.unshift({ ...yarn, rowIndex: stash.length + 2 });
       render();
-      closeAddModal();
-
-      postAction({
-        action: 'ADD',
-        yarn: yarn
-      });
-
-      document.getElementById('new-name').value = '';
-      document.getElementById('new-colour').value = '';
-      document.getElementById('new-shade').value = '';
+      closeModal('add-yarn-modal');
+      postAction({ action: 'ADD_YARN', yarn });
     }
 
-    document.getElementById('search-bar').addEventListener('input', render);
+    function saveNewIdea() {
+      const name = document.getElementById('idea-name').value.trim();
+      if (!name) return alert('Please enter a project idea name');
+      const idea = {
+        name,
+        patternLink: document.getElementById('idea-link').value.trim(),
+        where: document.getElementById('idea-where').value.trim(),
+        paid: document.getElementById('idea-paid').value.trim(),
+        yarn: document.getElementById('idea-yarn').value.trim(),
+        hook: document.getElementById('idea-hook').value.trim(),
+        doing: document.getElementById('idea-doing').value,
+        notes: document.getElementById('idea-notes').value.trim()
+      };
+      ideas.unshift(idea);
+      render();
+      closeModal('add-idea-modal');
+      postAction({ action: 'ADD_IDEA', idea });
+    }
 
-    // Initial load
+    function saveQuickNote() {
+      const input = document.getElementById('quick-note-input');
+      const note = input.value.trim();
+      if (!note) return;
+      roughNotes.push(note);
+      input.value = '';
+      render();
+      postAction({ action: 'ADD_NOTE', note });
+    }
+
+    function deleteQuickNote(idx) {
+      roughNotes.splice(idx, 1);
+      render();
+    }
+
+    function openModal(id) { document.getElementById(id).classList.add('active'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+    document.getElementById('search-bar').addEventListener('input', render);
     fetchFromSheet();
   </script>
 </body>
