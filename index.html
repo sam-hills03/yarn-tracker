@@ -14,7 +14,6 @@
       --accent: #5b8266;
       --accent-light: #e8f0eb;
       --stat-purple: #70587c;
-      --stat-purple-light: #f3edf7;
       --bg: #f8f6f2;
       --card-bg: #ffffff;
       --text: #2c2724;
@@ -63,6 +62,7 @@
       border-radius: 12px;
       font-size: 0.95rem;
       background: #faf8f5;
+      color: var(--text);
       outline: none;
     }
     .search-input:focus { border-color: var(--primary); background: #fff; }
@@ -134,13 +134,23 @@
       border-top: 1px dashed var(--border);
       gap: 10px;
     }
+    /* Fixed select styling: forces readable dark text and background */
     select.assign-select {
       flex: 1;
-      padding: 7px 10px;
+      padding: 9px 10px;
       border-radius: 8px;
       border: 1px solid var(--border);
-      font-size: 0.82rem;
-      background: #fbf9f6;
+      font-size: 0.85rem;
+      font-family: inherit;
+      background-color: #ffffff !important;
+      color: #2c2724 !important;
+      appearance: auto;
+      -webkit-appearance: auto;
+    }
+    select.assign-select option {
+      background-color: #ffffff !important;
+      color: #2c2724 !important;
+      padding: 6px 10px;
     }
     .btn-action {
       background: none;
@@ -291,6 +301,8 @@
       border-radius: 10px;
       font-size: 0.95rem;
       font-family: inherit;
+      color: var(--text);
+      background: #fff;
     }
     .checkbox-row { display: flex; gap: 16px; margin: 12px 0; }
     .checkbox-item { display: flex; align-items: center; gap: 6px; font-size: 0.85rem; }
@@ -338,10 +350,8 @@
   </div>
 
   <main>
-    <!-- Stash View -->
     <div id="yarn-list" class="card-list"></div>
 
-    <!-- Projects & Ideas View -->
     <div id="projects-view" style="display:none;">
       <div class="section-title">✨ Project Planner</div>
       <div id="planner-list" class="card-list"></div>
@@ -357,7 +367,6 @@
       </div>
     </div>
 
-    <!-- Stats View -->
     <div id="stats-view" style="display:none;">
       <div class="stats-grid">
         <div class="stat-metric-card">
@@ -598,7 +607,7 @@
   <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbyL4si7OB71uYZJnrrtJb79gaitfdGcpkRwtM_T8S_kAhZBHFf3mhpLnMg4KB7b2oqZyw/exec";
 
-    // Permanent default projects from sheet[cite: 1]
+    // Guaranteed baseline list of all projects and ideas
     const DEFAULT_PLANNER = [
       { rowIndex: 3, name: "Hexagon Cardigan", pattern: "Bought", yarn: "Hayfield Spirit DK - Bliss", hook: "4", status: "Complete", notes: "For Me" },
       { rowIndex: 4, name: "Teardrops Clothes Basket", pattern: "NO", yarn: "N/A T-shirt yarn - Green", hook: "8", status: "Complete", notes: "For Home" },
@@ -625,17 +634,6 @@
       "Tunisian crochet hooks with cables!"
     ];
 
-    // Wipe stale blank cache on boot so the dropdown fixes immediately
-    if (localStorage.getItem('stash_data')) {
-      try {
-        const testCache = JSON.parse(localStorage.getItem('stash_data'));
-        if (testCache && testCache.some(s => s && s.project === '')) {
-          localStorage.removeItem('planner_data');
-          localStorage.removeItem('ideas_data');
-        }
-      } catch(e) {}
-    }
-
     let stash = JSON.parse(localStorage.getItem('stash_data')) || [];
     let planner = JSON.parse(localStorage.getItem('planner_data')) || DEFAULT_PLANNER;
     let ideas = JSON.parse(localStorage.getItem('ideas_data')) || DEFAULT_IDEAS;
@@ -646,8 +644,10 @@
 
     function setSyncStatus(state, text) {
       const el = document.getElementById('sync-indicator');
-      el.className = 'sync-status ' + state;
-      el.innerText = text;
+      if (el) {
+        el.className = 'sync-status ' + state;
+        el.innerText = text;
+      }
     }
 
     async function fetchFromSheet() {
@@ -689,35 +689,43 @@
       }
     }
 
+    // Gathers and cleans EVERY project name across all sources
     function getAllProjectsList() {
       const set = new Set();
 
-      const sanitize = (val) => {
-        if (!val) return '';
-        const s = String(val).trim();
-        // Ignore headers, booleans, empty strings, and template placeholders
-        if (!s || s === 'TRUE' || s === 'FALSE' || s === 'Project Name' || s.startsWith('--') || s.startsWith('Project planner') || s.startsWith('Other idea')) {
+      const clean = (val) => {
+        if (!val || typeof val !== 'string') return '';
+        const s = val.trim();
+        const lower = s.toLowerCase();
+        if (!s || s === 'TRUE' || s === 'FALSE' || lower === 'project name' || s.startsWith('--') || lower.startsWith('project planner') || lower.startsWith('other idea')) {
           return '';
         }
         return s;
       };
 
-      planner.forEach(p => {
-        const name = sanitize(p && p.name);
-        if (name) set.add(name);
+      // 1. Projects from Planner tab
+      (planner || []).forEach(p => {
+        const n = clean(p && p.name);
+        if (n) set.add(n);
       });
 
-      ideas.forEach(i => {
-        const name = sanitize(i && i.name);
-        if (name) set.add(name);
+      // 2. Ideas from Wishlist
+      (ideas || []).forEach(i => {
+        const n = clean(i && i.name);
+        if (n) set.add(n);
       });
 
-      stash.forEach(s => {
-        const proj = sanitize(s && s.project);
-        if (proj) set.add(proj);
+      // 3. Any projects currently assigned to yarn skeins in Stock
+      (stash || []).forEach(s => {
+        const n = clean(s && s.project);
+        if (n) set.add(n);
       });
 
-      return Array.from(set).sort((a, b) => a.localeCompare(b));
+      // 4. Ensure permanent fallbacks exist if lists are empty
+      DEFAULT_PLANNER.forEach(p => set.add(p.name));
+      DEFAULT_IDEAS.forEach(i => set.add(i.name));
+
+      return Array.from(set).filter(Boolean).sort((a, b) => a.localeCompare(b));
     }
 
     function setFilter(filter) {
@@ -843,7 +851,9 @@
             <div class="card-actions">
               <select class="assign-select" onchange="assignProject(${item.rowIndex}, this.value)">
                 <option value="">-- Assign Project --</option>
-                ${allProjects.map(p => `<option value="${p}" ${item.project === p ? 'selected' : ''}>${p}</option>`).join('')}
+                ${allProjects.map(p => `
+                  <option value="${p}" ${item.project === p ? 'selected' : ''}>${p}</option>
+                `).join('')}
                 <option value="__NEW__">+ New Project...</option>
               </select>
               <button class="delete-btn" onclick="deleteYarn(${item.rowIndex})">Delete</button>
@@ -903,7 +913,7 @@
       }
     }
 
-    // --- EDIT PLANNER MODAL HANDLERS ---
+    // Edit Planner Handlers
     function openEditPlanner(rowIndex) {
       const p = planner.find(item => item.rowIndex === rowIndex);
       if (!p) return;
@@ -943,7 +953,7 @@
       postAction({ action: 'DELETE_ROW', rowIndex });
     }
 
-    // --- EDIT IDEA MODAL HANDLERS ---
+    // Edit Idea Handlers
     function openEditIdea(rowIndex) {
       const i = ideas.find(item => item.rowIndex === rowIndex);
       if (!i) return;
@@ -987,7 +997,7 @@
       postAction({ action: 'DELETE_ROW', rowIndex });
     }
 
-    // --- YARN & QUICK NOTES HANDLERS ---
+    // Yarn & Note actions
     function assignProject(rowIndex, value) {
       let finalProject = value;
       if (value === '__NEW__') {
