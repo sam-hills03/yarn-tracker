@@ -497,6 +497,12 @@
       Stats
     </button>
   </nav>
+    <button class="tab-btn" id="tab-tools" onclick="openModal('calc-modal')">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14H7v-2h5v2zm5-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+      </svg>
+      Scrap Calc
+    </button>
 
   <!-- Project Assignment Bottom Sheet Picker -->
   <div class="modal" id="assign-picker-modal">
@@ -558,6 +564,56 @@
       </div>
       <button class="submit-btn" onclick="saveNewYarn()">Save to Stash</button>
       <button class="cancel-btn" onclick="closeModal('add-yarn-modal')">Cancel</button>
+    </div>
+  </div>
+
+  <!-- Scrap Yarn Length & Weight Calculator Modal -->
+  <div class="modal" id="calc-modal">
+    <div class="modal-content">
+      <h2 style="font-size: 1.25rem; margin-bottom: 6px;">🧶 Yarn Length Estimator</h2>
+      <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 14px;">
+        Weigh your scrap ball on kitchen scales to estimate remaining yardage:
+      </p>
+
+      <div class="form-group">
+        <label>Yarn Weight Category</label>
+        <select id="calc-weight" onchange="calculateYarnLength()">
+          <option value="fine">Fine / 4-ply (~400m per 100g)</option>
+          <option value="dk" selected>DK (~280m per 100g)</option>
+          <option value="aran">Aran / Worsted (~200m per 100g)</option>
+          <option value="chunky">Chunky (~140m per 100g)</option>
+          <option value="super-chunky">Super Chunky (~80m per 100g)</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Scale Weight (Grams)</label>
+        <input type="number" id="calc-grams" placeholder="e.g. 42" oninput="calculateYarnLength()" />
+      </div>
+
+      <!-- Results Card -->
+      <div style="background:#faf8f5; border:1px solid var(--border); border-radius:12px; padding:14px; margin:14px 0; text-align:center;">
+        <div style="font-size:0.75rem; text-transform:uppercase; color:var(--text-muted); font-weight:700; letter-spacing:0.5px;">Estimated Remaining Length</div>
+        <div style="display:flex; justify-content:center; gap:20px; margin-top:8px;">
+          <div>
+            <span id="result-meters" style="font-size:1.6rem; font-weight:800; color:var(--primary);">0</span>
+            <span style="font-size:0.85rem; font-weight:600; color:var(--text-muted);">metres</span>
+          </div>
+          <div>
+            <span id="result-yards" style="font-size:1.6rem; font-weight:800; color:var(--accent);">0</span>
+            <span style="font-size:0.85rem; font-weight:600; color:var(--text-muted);">yards</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Pattern Requirement Check -->
+      <div class="form-group">
+        <label>Pattern Needed (Optional Metres)</label>
+        <input type="number" id="calc-needed" placeholder="e.g. 100" oninput="calculateYarnLength()" />
+      </div>
+      <div id="calc-verdict" style="font-size:0.85rem; font-weight:700; text-align:center; min-height:20px;"></div>
+
+      <button class="cancel-btn" style="margin-top:14px;" onclick="closeModal('calc-modal')">Done</button>
     </div>
   </div>
 
@@ -1280,6 +1336,40 @@
 
     document.getElementById('search-bar').addEventListener('input', render);
     fetchFromSheet();
+    // Standard industry estimates for meters per 100g
+    const YARN_YIELD_PER_100G = {
+      'fine': 400,
+      'dk': 280,
+      'aran': 200,
+      'chunky': 140,
+      'super-chunky': 80
+    };
+
+    function calculateYarnLength() {
+      const weightType = document.getElementById('calc-weight').value;
+      const grams = parseFloat(document.getElementById('calc-grams').value) || 0;
+      const needed = parseFloat(document.getElementById('calc-needed').value) || 0;
+
+      const yieldPerGram = YARN_YIELD_PER_100G[weightType] / 100;
+      const meters = Math.round(grams * yieldPerGram);
+      const yards = Math.round(meters * 1.09361);
+
+      document.getElementById('result-meters').innerText = meters;
+      document.getElementById('result-yards').innerText = yards;
+
+      const verdictEl = document.getElementById('calc-verdict');
+      if (needed > 0 && meters > 0) {
+        if (meters >= needed) {
+          verdictEl.style.color = 'var(--accent)';
+          verdictEl.innerText = `✓ Enough yarn! (+${meters - needed}m spare)`;
+        } else {
+          verdictEl.style.color = '#b84335';
+          verdictEl.innerText = `⚠️ Short by approx ${needed - meters}m`;
+        }
+      } else {
+        verdictEl.innerText = '';
+      }
+    }
   </script>
 </body>
 </html>
